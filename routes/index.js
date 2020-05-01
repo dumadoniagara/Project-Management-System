@@ -1,13 +1,44 @@
 var express = require('express');
 var router = express.Router();
+const bcrypt = require('bcrypt');
+
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('login');
-});
+module.exports = (db) => {
+  router.get('/', function (req, res, next) {
+    res.render('login');
+  });
 
-router.get('/home', function(req, res, next) {
-  res.render('index',{title:'Welcome you success to login'});
-});
+  router.post('/login', (req, res) => {
+    const sql = 'SELECT * FROM users WHERE email = $1'
+    const email = [req.body.email];
+    db.query(sql, email, (err, data) => {
+      if (err) return res.status(500).json({
+        error: true,
+        message: "error di query"
+      })
+      if (data.rows.length == 0) return res.status(500).json({
+        error: true,
+        message: `email doesn't exist`
+      })
+      console.log(data.rows[0])
+      bcrypt.compare(req.body.password, data.rows[0].password, function (err, result) {
+        if (err) return res.status(500).json({
+          error: true,
+          message: "error di bcrypt"
+        })
+        if (result){
+          res.redirect('/home');
+        } else {
+          res.redirect('/');
+        }
+      })
+    });
+  })
 
-module.exports = router;
+  router.get('/home', function (req, res, next) {
+    res.render('index', { title : 'Login Succes'});
+  });
+
+  return router;
+}
