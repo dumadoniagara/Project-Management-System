@@ -28,7 +28,7 @@ module.exports = (db) => {
           message: "error di bcrypt"
         })
         if (result){
-          res.redirect('/home');
+          res.redirect('/projects');
         } else {
           res.redirect('/');
         }
@@ -36,8 +36,8 @@ module.exports = (db) => {
     });
   })
 
-  router.get('/home', function (req, res, next) {
-    res.render('index', { title : 'Login Succes'});
+  router.get('/projects', function (req, res, next) {
+    res.render('projects');
   });
 
   return router;
