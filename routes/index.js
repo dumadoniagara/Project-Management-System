@@ -40,5 +40,9 @@ module.exports = (db) => {
     res.render('projects');
   });
 
+  router.get('/profile', function(req,res){
+    res.render('profile');
+  })
+
   return router;
 }
