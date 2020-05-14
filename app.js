@@ -20,8 +20,8 @@ const pool = new Pool({
 
 var indexRouter = require('./routes/index')(pool);
 var usersRouter = require('./routes/users')(pool);
-var apiRouter = require('./routes/project')(pool);
 var projectRouter = require('./routes/project')(pool);
+var apiRouter = require('./routes/apitesting')(pool);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

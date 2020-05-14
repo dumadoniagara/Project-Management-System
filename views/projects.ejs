@@ -29,8 +29,8 @@
                     <div class="row">
                         <div class="col">
                             <div class="form-check">
-                                <input class="form-check-input" name="cId" type="checkbox" id="cId">
-                                <label class="form-check-label" name="cId" for="checkId">
+                                <input class="form-check-input" name="checkId" type="checkbox" id="check-id">
+                                <label class="form-check-label" for="check-id">
                                     ID
                                 </label>
                             </div>
@@ -45,8 +45,8 @@
                     <div class="row">
                         <div class="col">
                             <div class="form-check">
-                                <input class="form-check-input" name="cName" type="checkbox" id="cName">
-                                <label class="form-check-label" name="cName" for="cName">
+                                <input class="form-check-input" name="checkName" type="checkbox" id="check-name">
+                                <label class="form-check-label" for="check-name">
                                     Name
                                 </label>
                             </div>
@@ -61,21 +61,19 @@
                     <div class="row">
                         <div class="col">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="cMember" id="cMember">
-                                <label class="form-check-label" for="cMember">
+                                <input class="form-check-input" type="checkbox" name="checkMember" id="check-member">
+                                <label class="form-check-label" for="check-member">
                                     Member
                                 </label>
                             </div>
                         </div>
                         <div class="col-10">
                             <div class="form-group">
-                                <select name="member" id="member" class="form-control">
+                                <select name="memberId" id="member" class="form-control">
                                     <option selected disabled> Choose the member ...</option>
-                                    <option name="bool" class="form-control" value="true">member 1</option>
-                                    <option name="bool" class="form-control" value="false">member 2</option>
-                                    <option name="bool" class="form-control" value="false">member 3</option>
-                                    <option name="bool" class="form-control" value="false">member 4</option>
-                                    <option name="bool" class="form-control" value="false">member 5</option>
+                                    <% memberList.forEach(item => { %>
+                                    <option class="form-control" value="<%= item.userid %>"><%= item.fullname %></option>
+                                    <% }) %>
                                 </select>
                             </div>
                         </div>
