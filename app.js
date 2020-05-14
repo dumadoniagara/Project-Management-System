@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
 var flash = require('connect-flash');
+// bakal nempel ke expressnya jd bisa dipanggil pake method req.flash
 
 var app = express();
 const { Pool } = require('pg');
@@ -19,6 +20,8 @@ const pool = new Pool({
 
 var indexRouter = require('./routes/index')(pool);
 var usersRouter = require('./routes/users')(pool);
+var apiRouter = require('./routes/project')(pool);
+var projectRouter = require('./routes/project')(pool);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -36,6 +39,8 @@ app.use(flash());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/api', apiRouter);
+app.use('/project', projectRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

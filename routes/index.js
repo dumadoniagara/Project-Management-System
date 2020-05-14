@@ -9,11 +9,9 @@ function isLoggedIn(req, res, next) {
     res.redirect('/');
   }
 }
-
-/* GET home page. */
 module.exports = (db) => {
   router.get('/', function (req, res, next) {
-    res.render('login',{messages : req.flash('loginInfo')});
+    res.render('login', { messages: req.flash('loginInfo') });
   });
 
   router.post('/login', (req, res) => {
@@ -35,7 +33,7 @@ module.exports = (db) => {
         }
         if (result) {
           req.session.user = data.rows[0];
-          res.render('projects', { user: req.session.user });
+          res.redirect('/project');
         } else {
           req.flash('loginInfo', 'email or password wrong');
           res.redirect('/');
@@ -45,6 +43,7 @@ module.exports = (db) => {
   })
 
   router.get('/projects', isLoggedIn, function (req, res, next) {
+    const sql = `SELECT * FROM users WHERE email = $1`;
     res.render('projects', { user: req.session.user });
   });
 
