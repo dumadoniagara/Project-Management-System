@@ -7,11 +7,56 @@ let checkOption = {
 }
 
 module.exports = (db) => {
+
+    let projectsModel = (sql) => {
+        return new Promise((resolve, reject) => {
+            db.query(sql, (err, result) => {
+                let data = result.rows;
+                if (data.length == 0) {
+                    return res.send('error data pencarian kosong')
+                    // bisa ditamabahin flash (data tidak ditemukan)
+                }
+                for (i = 0; i < data.length; i++) {
+                    if (data[i].members != null) {
+                        let memberList = data[i].members.split(',');
+                        data[i].members = memberList;
+                    }
+                }
+                resolve(data)
+                reject(err)
+            })
+        })
+    }
+
+    let membersModel = (sql) => {
+        return new Promise((resolve, reject) => {
+            db.query(sql, (err, result) => {
+                let data = result.rows;
+                resolve(data)
+                reject(err)
+            })
+        })
+    }
+
+    let pageModel = (sql) => {
+        return new Promise((resolve, reject) => {
+            db.query(sql, (err, result) => {
+                let data = result.rows;
+                resolve(data)
+                reject(err)
+            })
+        })
+    }
+
     router.get('/', function (req, res, next) {
         const { checkId, id, checkName, name, checkMember, memberId } = req.query;
         let isSearch = false;
         let query = [];
         let search = "";
+        const page = req.query.page || 1;
+        const limit = 2;
+        const offset = (page - 1) * limit;
+        let url = req.url.includes('page') ? req.url : `/project?page=1&`+req.url.slice(2)
 
         console.log(req.query);
         if (checkId && id) {
@@ -32,49 +77,26 @@ module.exports = (db) => {
         }
         console.log(search);
 
-        let projectsModel = (sql) => {
-            return new Promise((resolve, reject) => {
-                db.query(sql, (err, result) => {
-                    let data = result.rows;
-                    if(data.length == 0){
-                        return res.send('error data pencarian kosong')
-                        // bisa ditamabahin flash (data tidak ditemukan)
-                    }
-                    for (i = 0; i < data.length; i++) {
-                        if (data[i].members != null) {
-                            let memberList = data[i].members.split(',');
-                            data[i].members = memberList;
-                        }
-                    }
-                    resolve(data)
-                    reject(err)
-                })
-            })
-        }
-
-        let membersModel = (sql) => {
-            return new Promise((resolve, reject) => {
-                db.query(sql, (err, result) => {
-                    let data = result.rows;
-                    resolve(data)
-                    reject(err)
-                })
-            })
-        }
-
-
-        const sqlAll = `SELECT projects.projectid, projects.name, STRING_AGG (users.firstname || ' ' || users.lastname,',' ORDER BY users.firstname, users.lastname) members FROM projects LEFT JOIN members ON projects.projectid = members.projectid LEFT JOIN users ON members.userid = users.userid ${search} GROUP BY projects.projectid`;
+        const sqlAll = `SELECT projects.projectid, projects.name, STRING_AGG (users.firstname || ' ' || users.lastname,',' ORDER BY users.firstname, users.lastname) members FROM projects LEFT JOIN members ON projects.projectid = members.projectid LEFT JOIN users ON members.userid = users.userid ${search} GROUP BY projects.projectid LIMIT ${limit} OFFSET ${offset}`;
 
         const sqlMembers = `SELECT DISTINCT (userid), CONCAT(firstname, ' ', lastname) AS fullname FROM users ORDER BY fullname`;
 
-        Promise.all([membersModel(sqlMembers), projectsModel(sqlAll)])
+        const sqlPage = `SELECT COUNT(DISTINCT projectid) as total FROM projects`
+
+        Promise.all([membersModel(sqlMembers), projectsModel(sqlAll), pageModel(sqlPage)])
             .then(result => {
-                const [memberList, data] = result;
+                const [memberList, data, totalPage] = result;
+                const pages = Math.ceil(totalPage[0].total / limit);
                 res.status(200).render('projects',{
+                // res.status(200).json({
                     memberList,
                     data,
                     user: req.session.user,
-                    checkOption
+                    checkOption,
+                    pages,
+                    totalPage,
+                    page,
+                    url
                 })
             })
             .catch(err => {
@@ -83,7 +105,6 @@ module.exports = (db) => {
                     message: 'error promise query'
                 })
             })
-
     });
 
     router.post('/option', function (req, res) {
