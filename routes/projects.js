@@ -56,7 +56,7 @@ module.exports = (db) => {
         const page = req.query.page || 1;
         const limit = 2;
         const offset = (page - 1) * limit;
-        let url = req.url.includes('page') ? req.url : `/project?page=1&`+req.url.slice(2)
+        let url = req.url.includes('page') ? req.url : `/projects?page=1&` + req.url.slice(2)
 
         console.log(req.query);
         if (checkId && id) {
@@ -87,8 +87,7 @@ module.exports = (db) => {
             .then(result => {
                 const [memberList, data, totalPage] = result;
                 const pages = Math.ceil(totalPage[0].total / limit);
-                res.status(200).render('projects',{
-                // res.status(200).json({
+                res.status(200).render('projects/index', {
                     memberList,
                     data,
                     user: req.session.user,
@@ -112,11 +111,13 @@ module.exports = (db) => {
         checkOption.id = checkId;
         checkOption.name = checkName;
         checkOption.members = checkMembers;
-
         console.log(checkOption);
         res.redirect('/project');
     })
 
+    router.get('/add', (req, res) => {
+        res.render('projects/add')
+    })
 
     return router;
 }
