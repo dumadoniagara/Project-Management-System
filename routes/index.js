@@ -47,9 +47,9 @@ module.exports = (db) => {
     res.render('projects', { user: req.session.user });
   });
 
-  router.get('/profile', isLoggedIn, function (req, res) {
-    res.render('profile');
-  })
+  // router.get('/profile', isLoggedIn, function (req, res) {
+  //   res.render('profile');
+  // })
 
   router.get('/logout', (req, res) => {
     req.session.destroy(function (err) {

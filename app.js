@@ -21,6 +21,7 @@ const pool = new Pool({
 var indexRouter = require('./routes/index')(pool);
 var usersRouter = require('./routes/users')(pool);
 var projectRouter = require('./routes/project')(pool);
+var profileRouter = require('./routes/profile')(pool);
 var apiRouter = require('./routes/apitesting')(pool);
 
 // view engine setup
@@ -41,6 +42,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api', apiRouter);
 app.use('/project', projectRouter);
+app.use('/profile', profileRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
