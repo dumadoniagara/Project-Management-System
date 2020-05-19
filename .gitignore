@@ -1,3 +1,4 @@
+git rm --cached SQL node_modules
 .package-lock.json
 SQL/
 node_modules/
