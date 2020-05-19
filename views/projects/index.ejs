@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <% include ./partials/css-bootstrap %>
+    <% include ../partials/css-bootstrap %>
     <style>
         .container {
             margin-top: 5%;
@@ -16,7 +16,7 @@
 <body>
 
     <header>
-        <%- include ./partials/navbar %>
+        <%- include ../partials/navbar %>
     </header>
 
     <div class="container">
@@ -151,7 +151,11 @@
                 </tbody>
             </table>
 
-            <div class="container">
+            <a href="/projects/add">
+                <button type="button" class="btn btn-primary">Add</button>
+            </a> <br> <br>
+
+            <div class="pagination ">
                 <nav aria-label="Page navigation example">
                     <ul class="pagination">
                         <li class="page-item <%= page==1 ? 'disabled' : '' %>"><a class="page-link"
@@ -165,7 +169,6 @@
                     </ul>
                 </nav>
             </div>
-
         </div>
     </div>
 

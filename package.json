@@ -20,5 +20,17 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.3"
-  }
+  },
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dumadoniagara/Project-Management-System.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dumadoniagara/Project-Management-System/issues"
+  },
+  "homepage": "https://github.com/dumadoniagara/Project-Management-System#readme",
+  "description": ""
 }

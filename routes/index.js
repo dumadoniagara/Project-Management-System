@@ -9,6 +9,8 @@ function isLoggedIn(req, res, next) {
     res.redirect('/');
   }
 }
+
+
 module.exports = (db) => {
   router.get('/', function (req, res, next) {
     res.render('login', { messages: req.flash('loginInfo') });
@@ -33,23 +35,14 @@ module.exports = (db) => {
         }
         if (result) {
           req.session.user = data.rows[0];
-          res.redirect('/project');
+          res.redirect('/projects');
         } else {
           req.flash('loginInfo', 'email or password wrong');
           res.redirect('/');
         }
       })
     });
-  })
-
-  router.get('/projects', isLoggedIn, function (req, res, next) {
-    const sql = `SELECT * FROM users WHERE email = $1`;
-    res.render('projects', { user: req.session.user });
   });
-
-  // router.get('/profile', isLoggedIn, function (req, res) {
-  //   res.render('profile');
-  // })
 
   router.get('/logout', (req, res) => {
     req.session.destroy(function (err) {
