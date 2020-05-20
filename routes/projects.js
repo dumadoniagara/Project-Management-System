@@ -27,9 +27,10 @@ module.exports = (db) => {
         })
     }
 
-    let membersModel = (sql) => {
+    let membersModel = () => {
         return new Promise((resolve, reject) => {
-            db.query(sql, (err, result) => {
+            const sqlMembers = `SELECT DISTINCT (userid), CONCAT(firstname, ' ', lastname) AS fullname FROM users ORDER BY fullname`;
+            db.query(sqlMembers, (err, result) => {
                 let data = result.rows;
                 resolve(data)
                 reject(err)
@@ -37,9 +38,10 @@ module.exports = (db) => {
         })
     }
 
-    let pageModel = (sql) => {
+    let pageModel = () => {
         return new Promise((resolve, reject) => {
-            db.query(sql, (err, result) => {
+            const sqlPage = `SELECT COUNT(DISTINCT projectid) as total FROM projects`
+            db.query(sqlPage, (err, result) => {
                 let data = result.rows;
                 resolve(data)
                 reject(err)
@@ -96,12 +98,58 @@ module.exports = (db) => {
         })
     }
 
-    let showDataEdit = (id) => {
+    let showData = (id) => {
         return new Promise((resolve, reject) => {
-            let sql = `DELETE FROM members WHERE projectid = $1`
-            db.query(sql, [id], (err) => {
+            db.query(`SELECT * FROM members WHERE projectid = $1`, [id], (err, data) => {
+                let result = data.rows;
+                resolve(result);
+                reject(err);
+            })
+        })
+    }
+    let projectData = (id) => {
+        return new Promise((resolve, reject) => {
+            db.query(`SELECT name, projectid FROM projects WHERE projectid = $1`, [id], (err, data) => {
+                let result = data.rows;
+                resolve(result);
+                reject(err);
+            })
+        })
+    }
+    let UpdateProjectName = (form) => {
+        return new Promise((resolve, reject) => {
+            db.query(`UPDATE projects SET name = $1 WHERE projectid = $2`, [form.projectName, form.projectId], (err) => {
                 resolve();
                 reject(err);
+            })
+        })
+    }
+
+    let deleteMember = (form) => {
+        return new Promise((resolve, reject) => {
+            let sqlDelete = `DELETE FROM members WHERE projectid = $1`;
+            db.query(sqlDelete, [parseInt(form.projectId)], (err) => {
+                resolve();
+                reject(err);
+            })
+        })
+    }
+
+    let updateProjectMember = (form) => {
+        return new Promise((resolve, reject) => {
+            let values = [];
+            let sqlInsert = `INSERT INTO members (projectid, userid) VALUES `
+            if (typeof form.members == 'object') {
+            form.members.forEach(item => {
+                values.push(`(${form.projectId}, ${item})`);
+            })
+            sqlInsert += values.join(', ');
+            } else {
+                sqlInsert += `(${form.projectId}, ${form.members})` 
+            }
+            db.query(sqlInsert, (err) => {
+            resolve();
+            reject(err);
             })
         })
     }
@@ -140,9 +188,9 @@ module.exports = (db) => {
 
         const sqlMembers = `SELECT DISTINCT (userid), CONCAT(firstname, ' ', lastname) AS fullname FROM users ORDER BY fullname`;
 
-        const sqlPage = `SELECT COUNT(DISTINCT projectid) as total FROM projects`
 
-        Promise.all([membersModel(sqlMembers), projectsModel(sqlAll), pageModel(sqlPage)])
+
+        Promise.all([membersModel(), projectsModel(sqlAll), pageModel()])
             .then(result => {
                 const [memberList, data, totalPage] = result;
                 const pages = Math.ceil(totalPage[0].total / limit);
@@ -215,16 +263,42 @@ module.exports = (db) => {
 
     router.get('/edit/:id', (req, res) => {
         const id = parseInt(req.params.id);
-        const sqlMembers = `SELECT DISTINCT (userid), CONCAT(firstname, ' ', lastname) AS fullname FROM users ORDER BY fullname`;
-        membersModel(sqlMembers)
-            .then((memberList) => {
+        Promise.all([membersModel(), showData(id), projectData(id)])
+            .then((data) => {
+                let [memberList, memberProject, projectName] = data;
+                let membersId = [];
+                memberProject.forEach(item => {
+                    membersId.push(item.userid);
+                })
+
                 res.render('projects/edit', {
                     // res.status(200).json({
-                    memberList
+                    memberList,
+                    membersId,
+                    projectName
                 })
+            })
+            .catch(err => {
+                console.log(err);
             })
     })
 
+    router.post('/edit', (req, res) => {
+        let form = req.body;
+        Promise.all([UpdateProjectName(form), deleteMember(form)])
+            .then(() => {
+                updateProjectMember(form)
+                    .then(() => {
+                        res.redirect('/projects')
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+    })
 
     return router;
 }
