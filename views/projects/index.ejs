@@ -81,13 +81,13 @@
                     </div>
 
                     <button type="submit" class="btn btn-dark" id="search-btn">Search</button>
-                    <a href="/project"><button class="btn btn-dark" id="search-btn">All</button></a>
+                    <a href="/projects"><button class="btn btn-dark" id="search-btn">All</button></a>
                 </div>
             </form>
         </div>
 
         <div class="optionsView mt-4">
-            <form action="/project/option" method="POST">
+            <form action="/projects/option" method="POST">
                 <h2>Options</h2>
                 <div class="form-group row">
                     <div class="col-sm-2 ml-3">Columns</div>
@@ -139,10 +139,10 @@
                         <td <%= checkOption.members!= undefined ? '' : 'hidden' %>>
                             <%= item.members != null ? item.members.join(", ") : "TIDAK ADA MEMBER TERDAFTAR" %></td>
                         <td>
-                            <a href="/edit/<%= item.projectid %>">
+                            <a href="projects/edit/<%= item.projectid %>">
                                 <button type="button" class="btn btn-success">Edit</button>
                             </a>
-                            <a href="/delete/<%= item.projectid %>">
+                            <a href="projects/delete/<%= item.projectid %>">
                                 <button type="button" class="btn btn-danger">Delete</button>
                             </a>
                         </td>
