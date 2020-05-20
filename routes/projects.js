@@ -48,6 +48,13 @@ module.exports = (db) => {
         })
     }
 
+    let addProject = () => {
+        return new Promise((resolve, reject)=>{
+            let sql = `INSERT INTO projects`
+            db.query()
+        })
+    }
+
     router.get('/', function (req, res, next) {
         const { checkId, id, checkName, name, checkMember, memberId } = req.query;
         let isSearch = false;
@@ -116,8 +123,23 @@ module.exports = (db) => {
     })
 
     router.get('/add', (req, res) => {
-        res.render('projects/add')
+        const sqlMembers = `SELECT DISTINCT (userid), CONCAT(firstname, ' ', lastname) AS fullname FROM users ORDER BY fullname`;
+        membersModel(sqlMembers)
+            .then((memberList) => {
+                res.render('projects/add',{
+                // res.status(200).json({
+                    memberList
+                })
+            })
     })
 
-    return router;
+    router.post('/add', (req, res) => {
+        let form = req.body;
+        res.status(200).json({
+            form
+        })
+    })
+
+
+return router;
 }

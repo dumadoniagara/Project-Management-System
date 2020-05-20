@@ -13,10 +13,9 @@ function isLoggedIn(req, res, next) {
 
 module.exports = (db) => {
 
-
-    let profileModel = (user) => {
+    let profileModel = (id) => {
         return new Promise((resolve, reject) => {
-            db.query(`SELECT * FROM members where userid = ${user.userid}`, (err, result) => {
+            db.query(`SELECT * FROM users where userid = ${id}`, (err, result) => {
                 let data = result.rows;
                 if (data.length == 0) {
                     return res.send('error user data')
@@ -28,20 +27,9 @@ module.exports = (db) => {
         })
     }
 
-    let memberEdit = (user, data) => {
-        return new Promise((resolve, reject) => {
-            db.query(`UPDATE members
-            SET role=$1, type=$2
-            WHERE userid = $3;`, [data.role, data.type, user.userid], (err) => {
-                resolve()
-                reject(err)
-            })
-        })
-    }
-
     let userEdit = (user, data) => {
         if (data.password) {
-            bcrypt.hash(data.password, saltRounds, function (err, hash) {
+            bcrypt.hash(data.password, saltRounds, (err, hash) => {
                 if (err) {
                     res.json({
                         error: true,
@@ -49,23 +37,21 @@ module.exports = (db) => {
                     })
                 }
                 return new Promise((resolve, reject) => {
-                    let sql = `UPDATE users
-                    SET firstname=$1, lastname=$2, password=$3
-                    WHERE userid = $4;`
-                    db.query(sql, [data.firstname, data.lastname, hash, user.userid], (err) => {
-                        resolve()
-                        reject(err)
-                    })
-                })
+                    let sql = `UPDATE users SET firstname=$1, lastname=$2, position=$3, type=$4, password=$5 WHERE userid = $6`;
+                    db.query(sql, [data.firstname, data.lastname, data.position, data.type, hash, user.userid], (err) => {
+                        resolve();
+                        reject(err);
+                    });
+                });
             })
         } else {
             return new Promise((resolve, reject) => {
                 let sql = `UPDATE users
-                SET firstname=$1, lastname=$2
-                WHERE userid = $3;`
-                db.query(sql, [data.firstname, data.lastname, user.userid], (err) => {
-                    resolve()
-                    reject(err)
+                SET firstname=$1, lastname=$2, position=$3, type=$4
+                WHERE userid = $5`
+                db.query(sql, [data.firstname, data.lastname, data.position, data.type, user.userid], (err) => {
+                    resolve();
+                    reject(err);
                 })
             })
         }
@@ -74,11 +60,10 @@ module.exports = (db) => {
 
     router.get('/', function (req, res, next) {
         let user = req.session.user;
-        profileModel(user)
+        profileModel(user.userid)
             .then(data => {
                 res.render('profile', {
                     // res.status(200).json({
-                    user,
                     data: data[0]
                 })
             })
@@ -93,10 +78,14 @@ module.exports = (db) => {
     router.post('/', function (req, res, next) {
         let data = req.body;
         let user = req.session.user;
-        Promise.all([memberEdit(user, data), userEdit(user,data)])
+        userEdit(user, data)
             .then(() => {
                 // req.flash('dataUpdated', 'Data Profile Berhasil di Update');
-                res.redirect('/profile')
+                // res.redirect('/profile')
+                res.status(200).json({
+                    user,
+                    data
+                })
             })
             .catch((err) => {
                 res.status(500).json({
