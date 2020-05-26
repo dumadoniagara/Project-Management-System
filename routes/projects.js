@@ -283,6 +283,14 @@ module.exports = (db) => {
             })
     })
 
+    router.get('/overview/:id', (req, res) => {
+        const id = parseInt(req.params.id);
+        res.render('projects/overview',{
+            projectId : id
+        })
+        
+    })
+
     router.post('/edit', (req, res) => {
         let form = req.body;
         Promise.all([UpdateProjectName(form), deleteMember(form)])
@@ -298,6 +306,14 @@ module.exports = (db) => {
             .catch(err => {
                 console.log(err);
             })
+    })
+
+    router.get('/members/:id', (req, res) => {
+        const id = parseInt(req.params.id);
+        res.render('projects/members',{
+            projectId : id
+        })
+        
     })
 
     return router;
