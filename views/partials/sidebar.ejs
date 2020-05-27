@@ -2,7 +2,7 @@
     <div class="sidebar-sticky">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link active" href="/projects/overview/ <%= projectId %>">
+                <a class="nav-link active" href="/projects/overview/<%= project[0].projectid %>">
                     Overview
                 </a>
             </li>
@@ -12,7 +12,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/projects/members/ <%= projectId %>">
+                <a class="nav-link" href="/projects/members/<%= project[0].projectid %>">
                     Members
                 </a>
             </li>

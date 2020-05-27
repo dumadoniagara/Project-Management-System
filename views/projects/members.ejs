@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <% include ../partials/css-bootstrap %>
+    <%_ include ../partials/css-bootstrap -%>
     <style>
         .container-fluid {
             margin-top: 4%;
@@ -70,9 +70,9 @@
                                 <div class="row">
                                     <div class="col">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="checkMember"
+                                            <input class="form-check-input" type="checkbox" name="checkPosition"
                                                 id="check-member">
-                                            <label class="form-check-label" for="check-member">
+                                            <label class="form-check-label" for="check-position">
                                                 Position
                                             </label>
                                         </div>
@@ -94,28 +94,28 @@
                     </div>
 
                     <div class="optionsView mt-4">
-                        <form action="/projects/option" method="POST">
+                        <form action="" method="POST">
                             <h2>Options</h2>
                             <div class="form-group row">
                                 <div class="col-sm-2 ml-3">Columns</div>
                                 <div class="col">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="checkId" value="true"
-                                            id="check-id" >
+                                            id="check-id" <%= checkOptionMember.id != undefined ? 'checked' : '' %>>
                                         <label class="form-check-label" for="check-id">
                                             ID
                                         </label>
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="checkName" value="true"
-                                            id="check-name">
+                                            id="check-name" <%= checkOptionMember.name != undefined ? 'checked' : '' %>>
                                         <label class="form-check-label" for="check-name">
                                             Name
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="checkMembers" value="true"
-                                            id="check-members" >
+                                        <input class="form-check-input" type="checkbox" name="checkPosition" value="true"
+                                            id="check-members" <%= checkOptionMember.position != undefined ? 'checked' : '' %>>
                                         <label class="form-check-label" for="defaultCheck2">
                                             Position
                                         </label>
@@ -132,45 +132,32 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th scope="col" >#</th>
-                                    <th scope="col" >Name</th>
-                                    <th scope="col" >Members</th>
+                                    <th scope="col" <%= checkOptionMember.id ? '' : 'hidden' %>>#</th>
+                                    <th scope="col" <%= checkOptionMember.name? '' : 'hidden' %>>Name</th>
+                                    <th scope="col" <%= checkOptionMember.position ? '' : 'hidden' %>>Position</th>
                                     <th scope="col">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                
+                                <% memberList.forEach((item, index) => { %>
                                 <tr>
-                                    <th scope="row">1</th>
-                                    <td>Nama</td>
-                                    <td>Members</td>
+                                    <th scope="row" <%= checkOptionMember.id ? '' : 'hidden' %>><%= index + 1 %></th>
+                                    <td <%= checkOptionMember.name ? '' : 'hidden' %>><%= item.fullname %></td>
+                                    <td <%= checkOptionMember.position ? '' : 'hidden' %>><%= item.role ? item.role : 'Not Assigned'%></td>
                                     <td>
-                                        <a href="projects/edit/">
+                                        <a href="projects/edit/<%= project[0].projectid %>">
                                             <button type="button" class="btn btn-success">Edit</button>
                                         </a>
-                                        <a href="projects/delete/">
+                                        <a href="projects/delete/<%= project[0].projectid %>">
                                             <button type="button" class="btn btn-danger">Delete</button>
                                         </a>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <th scope="row">1</th>
-                                    <td>Nama</td>
-                                    <td>Members</td>
-                                    <td>
-                                        <a href="projects/edit/">
-                                            <button type="button" class="btn btn-success">Edit</button>
-                                        </a>
-                                        <a href="projects/delete/">
-                                            <button type="button" class="btn btn-danger">Delete</button>
-                                        </a>
-                                    </td>
-                                </tr>
-
+                            <% }) %>
                             </tbody>
                         </table>
 
-                        <a href="/projects/add">
+                        <a href="/projects/members/add">
                             <button type="button" class="btn btn-primary">Add</button>
                         </a> <br> <br>
 

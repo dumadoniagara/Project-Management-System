@@ -6,9 +6,15 @@ let checkOption = {
     members: true
 }
 
+let checkOptionMember = {
+    id: true,
+    name: true,
+    position: true
+}
+
 module.exports = (db) => {
 
-    let projectsModel = (sql) => {
+    function projectsModel(sql) {
         return new Promise((resolve, reject) => {
             db.query(sql, (err, result) => {
                 let data = result.rows;
@@ -27,7 +33,7 @@ module.exports = (db) => {
         })
     }
 
-    let membersModel = () => {
+    function usersModel() {
         return new Promise((resolve, reject) => {
             const sqlMembers = `SELECT DISTINCT (userid), CONCAT(firstname, ' ', lastname) AS fullname FROM users ORDER BY fullname`;
             db.query(sqlMembers, (err, result) => {
@@ -37,6 +43,18 @@ module.exports = (db) => {
             })
         })
     }
+
+    function usersModelbyProjectId(id) {
+        return new Promise((resolve, reject) => {
+            const sql = `SELECT CONCAT(firstname, ' ', lastname) AS fullname, members.role FROM users LEFT JOIN members ON users.userid = members.userid WHERE members.projectid = $1 ORDER BY fullname`;
+            db.query(sql, [id], (err, result) => {
+                let data = result.rows;
+                resolve(data)
+                reject(err)
+            })
+        })
+    }
+
 
     let pageModel = () => {
         return new Promise((resolve, reject) => {
@@ -59,26 +77,31 @@ module.exports = (db) => {
         })
     }
 
-    let addMembers = (form) => {
-        let membersId = form.members;
-        let value = [];
+    function addMembers(form) {
+        let values = [];
         return new Promise((resolve, reject) => {
             db.query(`SELECT MAX (projectid) FROM projects`, (err, data) => {
-                let sql = `INSERT INTO members (projectid, userid) VALUES `
-                membersId.forEach(id => {
-                    value.push(`(${data.rows[0].max}, ${id})`)
-                });
-                sql += value.join(', ');
-                db.query(sql, (err) => {
-                    resolve(sql);
+                let projectId = data.rows[0].max;
+                resolve(projectId);
+                reject(err);
+                let sqlInsert = `INSERT INTO members (projectid, userid) VALUES `
+                if (typeof form.members == 'object') {
+                    form.members.forEach(item => {
+                        values.push(`(${projectId}, ${item})`);
+                    })
+                    sqlInsert += values.join(', ');
+                } else {
+                    sqlInsert += `(${projectId}, ${form.members})`
+                }
+                db.query(sqlInsert, (err) => {
+                    resolve();
                     reject(err);
-                    // })
                 });
             });
         });
     }
 
-    let deleteProject = (id) => {
+    function deleteProject(id) {
         return new Promise((resolve, reject) => {
             let sql = `DELETE FROM projects WHERE projectid = $1`
             db.query(sql, [id], (err) => {
@@ -88,7 +111,7 @@ module.exports = (db) => {
         })
     }
 
-    let deleteProjectMembers = (id) => {
+    function deleteProjectMembers(id) {
         return new Promise((resolve, reject) => {
             let sql = `DELETE FROM members WHERE projectid = $1`
             db.query(sql, [id], (err) => {
@@ -98,7 +121,7 @@ module.exports = (db) => {
         })
     }
 
-    let showData = (id) => {
+    function showMembers(id) {
         return new Promise((resolve, reject) => {
             db.query(`SELECT * FROM members WHERE projectid = $1`, [id], (err, data) => {
                 let result = data.rows;
@@ -107,7 +130,7 @@ module.exports = (db) => {
             })
         })
     }
-    let projectData = (id) => {
+    function showProject(id) {
         return new Promise((resolve, reject) => {
             db.query(`SELECT name, projectid FROM projects WHERE projectid = $1`, [id], (err, data) => {
                 let result = data.rows;
@@ -116,7 +139,7 @@ module.exports = (db) => {
             })
         })
     }
-    let UpdateProjectName = (form) => {
+    function updateProjectName(form) {
         return new Promise((resolve, reject) => {
             db.query(`UPDATE projects SET name = $1 WHERE projectid = $2`, [form.projectName, form.projectId], (err) => {
                 resolve();
@@ -125,7 +148,7 @@ module.exports = (db) => {
         })
     }
 
-    let deleteMember = (form) => {
+    function deleteMember(form) {
         return new Promise((resolve, reject) => {
             let sqlDelete = `DELETE FROM members WHERE projectid = $1`;
             db.query(sqlDelete, [parseInt(form.projectId)], (err) => {
@@ -135,25 +158,26 @@ module.exports = (db) => {
         })
     }
 
-    let updateProjectMember = (form) => {
+    function updateProjectMember(form) {
         return new Promise((resolve, reject) => {
             let values = [];
             let sqlInsert = `INSERT INTO members (projectid, userid) VALUES `
             if (typeof form.members == 'object') {
-            form.members.forEach(item => {
-                values.push(`(${form.projectId}, ${item})`);
-            })
-            sqlInsert += values.join(', ');
+                form.members.forEach(item => {
+                    values.push(`(${form.projectId}, ${item})`);
+                })
+                sqlInsert += values.join(', ');
             } else {
-                sqlInsert += `(${form.projectId}, ${form.members})` 
+                sqlInsert += `(${form.projectId}, ${form.members})`
             }
             db.query(sqlInsert, (err) => {
-            resolve();
-            reject(err);
+                resolve();
+                reject(err);
             })
         })
     }
 
+    // ============== ROUTES =========================================================
 
     router.get('/', function (req, res, next) {
         const { checkId, id, checkName, name, checkMember, memberId } = req.query;
@@ -186,11 +210,7 @@ module.exports = (db) => {
 
         const sqlAll = `SELECT projects.projectid, projects.name, STRING_AGG (users.firstname || ' ' || users.lastname,',' ORDER BY users.firstname, users.lastname) members FROM projects LEFT JOIN members ON projects.projectid = members.projectid LEFT JOIN users ON members.userid = users.userid ${search} GROUP BY projects.projectid LIMIT ${limit} OFFSET ${offset}`;
 
-        const sqlMembers = `SELECT DISTINCT (userid), CONCAT(firstname, ' ', lastname) AS fullname FROM users ORDER BY fullname`;
-
-
-
-        Promise.all([membersModel(), projectsModel(sqlAll), pageModel()])
+        Promise.all([usersModel(), projectsModel(sqlAll), pageModel()])
             .then(result => {
                 const [memberList, data, totalPage] = result;
                 const pages = Math.ceil(totalPage[0].total / limit);
@@ -206,10 +226,7 @@ module.exports = (db) => {
                 })
             })
             .catch(err => {
-                res.json({
-                    error: true,
-                    message: 'error promise query'
-                })
+                console.log(err);
             })
     });
 
@@ -218,23 +235,27 @@ module.exports = (db) => {
         checkOption.id = checkId;
         checkOption.name = checkName;
         checkOption.members = checkMembers;
-        console.log(checkOption);
+        // console.log(checkOption);
         res.redirect('/projects');
     })
 
     router.get('/add', (req, res) => {
         const sqlMembers = `SELECT DISTINCT (userid), CONCAT(firstname, ' ', lastname) AS fullname FROM users ORDER BY fullname`;
-        membersModel(sqlMembers)
+        usersModel(sqlMembers)
             .then((memberList) => {
                 res.render('projects/add', {
                     // res.status(200).json({
                     memberList
                 })
             })
+            .catch(err => {
+                console.log(err)
+            })
     })
 
     router.post('/add', (req, res) => {
         let form = req.body;
+
         addProject(form)
             .then(() => {
                 addMembers(form)
@@ -263,7 +284,7 @@ module.exports = (db) => {
 
     router.get('/edit/:id', (req, res) => {
         const id = parseInt(req.params.id);
-        Promise.all([membersModel(), showData(id), projectData(id)])
+        Promise.all([usersModel(), showMembers(id), showProject(id)])
             .then((data) => {
                 let [memberList, memberProject, projectName] = data;
                 let membersId = [];
@@ -283,17 +304,9 @@ module.exports = (db) => {
             })
     })
 
-    router.get('/overview/:id', (req, res) => {
-        const id = parseInt(req.params.id);
-        res.render('projects/overview',{
-            projectId : id
-        })
-        
-    })
-
     router.post('/edit', (req, res) => {
         let form = req.body;
-        Promise.all([UpdateProjectName(form), deleteMember(form)])
+        Promise.all([updateProjectName(form), deleteMember(form)])
             .then(() => {
                 updateProjectMember(form)
                     .then(() => {
@@ -308,12 +321,63 @@ module.exports = (db) => {
             })
     })
 
+
+
+    // =============== PROJECT DETAIL PAGE ==============
+
+    router.get('/overview/:id', (req, res) => {
+        const id = parseInt(req.params.id);
+        Promise.all([showProject(id), usersModelbyProjectId(id)])
+            .then((data) => {
+                let [project, memberList] = data;
+                // res.status(200).json({
+                res.render('projects/overview', {
+                    project,
+                    memberList
+                })
+
+            })
+            .catch(err => {
+                console.log(err);
+            })
+    })
+
+
+
+
     router.get('/members/:id', (req, res) => {
         const id = parseInt(req.params.id);
-        res.render('projects/members',{
-            projectId : id
-        })
-        
+        Promise.all([showProject(id), usersModelbyProjectId(id)])
+            .then((data) => {
+                let [project, memberList] = data;
+                // res.status(200).json({
+                res.render('projects/members', {
+                    project,
+                    memberList,
+                    checkOptionMember
+                })
+
+            }).catch(err => {
+                console.log(err);
+            })
+    })
+
+    router.post('/members/:id', function (req, res) {
+        const id = parseInt(req.params.id);
+        const { checkId, checkName, checkPosition } = req.body;
+        checkOptionMember.id = checkId;
+        checkOptionMember.name = checkName;
+        checkOptionMember.position = checkPosition;
+        res.redirect(`/projects/members/${id}`);
+    })
+
+    // router.get('/members/add/', function (req, res) {
+    //     const id = parseInt(req.params.id);
+    //     res.render('/projects/members/add', {})
+    // })
+
+    router.get('/test/:id', (req, res) => {
+
     })
 
     return router;

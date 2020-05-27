@@ -134,10 +134,17 @@
                 <tbody>
                     <% data.forEach (item => { %>
                     <tr>
-                        <th scope="row" <%= checkOption.id != undefined ? '' : 'hidden' %>> <a href="projects/overview/<%= item.projectid %>"><%= item.projectid %></a></th>
+                        <th scope="row" <%= checkOption.id != undefined ? '' : 'hidden' %>> <a
+                                href="projects/overview/<%= item.projectid %>"><%= item.projectid %></a></th>
                         <td <%= checkOption.name != undefined ? '' : 'hidden' %>><%= item.name %></td>
                         <td <%= checkOption.members!= undefined ? '' : 'hidden' %>>
-                            <%= item.members != null ? item.members.join(", ") : "TIDAK ADA MEMBER TERDAFTAR" %></td>
+                            <% if(item.members){ %>
+                            <%= item.members.join(", ") %>
+                        </td>
+                        <% } else { %>
+                        <span class="badge badge-danger">belum ada member terdaftar</span>
+                        </td>
+                        <% } %>
                         <td>
                             <a href="projects/edit/<%= item.projectid %>">
                                 <button type="button" class="btn btn-success">Edit</button>
