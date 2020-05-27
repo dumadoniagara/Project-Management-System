@@ -46,6 +46,9 @@ module.exports = (db) => {
 
   router.get('/logout', (req, res) => {
     req.session.destroy(function (err) {
+      if(err){
+        console.log(err)
+      }
       res.redirect('/');
     })
   })

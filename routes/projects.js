@@ -130,6 +130,17 @@ module.exports = (db) => {
             })
         })
     }
+
+    function showMembersWithConstraint(projectid) {
+        return new Promise((resolve, reject) => {
+            db.query(`SELECT userid, CONCAT(firstname,' ', lastname) AS fullname FROM users WHERE userid NOT IN (SELECT userid FROM members WHERE projectid = $1)`, [projectid], (err, data) => {
+                let users = data.rows;
+                resolve(users);
+                reject(err);
+            })
+        })
+    }
+
     function showProject(id) {
         return new Promise((resolve, reject) => {
             db.query(`SELECT name, projectid FROM projects WHERE projectid = $1`, [id], (err, data) => {
@@ -171,6 +182,16 @@ module.exports = (db) => {
                 sqlInsert += `(${form.projectId}, ${form.members})`
             }
             db.query(sqlInsert, (err) => {
+                resolve();
+                reject(err);
+            })
+        })
+    }
+
+    function addProjectMember(form) {
+        return new Promise((resolve, reject) => {
+            let sqlInsert = `INSERT INTO members (projectid, userid, role) VALUES ($1,$2,$3)`
+            db.query(sqlInsert, [form.projectId, form.user, form.role], (err) => {
                 resolve();
                 reject(err);
             })
@@ -371,14 +392,47 @@ module.exports = (db) => {
         res.redirect(`/projects/members/${id}`);
     })
 
-    // router.get('/members/add/', function (req, res) {
-    //     const id = parseInt(req.params.id);
-    //     res.render('/projects/members/add', {})
+    router.get('/members/:id/add', (req, res) => {
+        const id = req.params.id;
+        Promise.all([showMembersWithConstraint(id), showProject(id)])
+            .then(data => {
+                let [users, project] = data;
+                res.render('projects/members/add', {
+                    // res.json({
+                    users,
+                    project
+                })
+            })
+            .catch(err => {
+                console.log(err)
+            })
+    })
+
+    router.post('/members/:id/add', (req, res) => {
+        const id = req.params.id;
+        const form = req.body;
+        addProjectMember(form)
+            .then(() => {
+                res.redirect(`/projects/members/${id}`);
+            })
+            .catch(err => {
+                console.log(err)
+            })
+    })
+
+    // router.get('/test/:projectid', (req, res) => {
+    //     const projectid = req.params.projectid;
+    //     showMembersWithConstraint(projectid)
+    //         .then(users => {
+    //             res.status(200).json({
+    //             res.render('/')
+    //             users
+    //         })
+    //         .catch(err => {
+    //             console.log(err)
+    //         })
     // })
 
-    router.get('/test/:id', (req, res) => {
-
-    })
 
     return router;
 }

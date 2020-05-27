@@ -34,7 +34,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
-  secret: 'itSnOtSecr3t83b'
+  secret: 'Doniagara Ds',
+  resave: true,
+  saveUninitialized: true
 }));
 app.use(flash());
 
