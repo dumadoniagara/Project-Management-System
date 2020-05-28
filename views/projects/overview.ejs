@@ -7,8 +7,9 @@
     <title>Home</title>
     <% include ../partials/css-bootstrap %>
     <style>
-        .container-fluid {
-            margin-top: 4%;
+        body {
+            margin-top: 60px;
+            margin-bottom: 80px;
         }
     </style>
     <link rel="stylesheet" href="/stylesheets/sidebar.css">
@@ -77,19 +78,16 @@
                         <div class="card">
                             <ul class="list-group list-group-flush">
                                 <% memberList.forEach(item => { %>
-                                    <li class="list-group-item">
-                                        <div class="row">
-                                            <h6 class="col" style="text-align: left;"><%= item.fullname %></h6>
-                                            <div style="text-align: right;">
-                                                <span class="badge badge-light" style="text-align: right;"><%= item.role ? item.role : 'Not Assigned'%></span>
-                                            </div>
+                                <li class="list-group-item">
+                                    <div class="row">
+                                        <h6 class="col" style="text-align: left;"><%= item.fullname %></h6>
+                                        <div style="text-align: right;">
+                                            <span class="badge badge-secondary"
+                                                style="text-align: right;"><%= item.role ? (item.role == 'programmer' ? 'SOFTWARE DEVELOPER' : item.role.toUpperCase()) : 'Not Assigned'%></span>
                                         </div>
-                                    </li>
-                               <% }); %>
-
-
-
-
+                                    </div>
+                                </li>
+                                <% }); %>
                             </ul>
                         </div>
                     </div>

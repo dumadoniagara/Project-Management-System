@@ -7,7 +7,7 @@
     <title>Home</title>
     <%_ include ../../partials/css-bootstrap -%>
     <style>
-        body{
+        body {
             margin-top: 60px;
             margin-bottom: 80px;
         }
@@ -23,7 +23,7 @@
 
             <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
                 <div class="content">
-                    <h1>Add Member</h1>
+                    <h1>Edit Member</h1>
                     <hr>
                     <br>
                     <form action="" method="POST">
@@ -34,13 +34,7 @@
                             </div>
                             <div class="col-10">
                                 <div class="form-group">
-                                    <select name="user" id="user" class="form-control">
-                                        <option selected disabled> Choose the user ...</option>
-                                        <% users.forEach(item => { %>
-                                        <option class="form-control" value="<%= item.userid %>"><%= item.fullname %>
-                                        </option>
-                                        <% }) %>
-                                    </select>
+                                    <input type="text" name="fullname" class="form-control" id="fullname" value="<%= user[0].fullname %>" readonly>
                                 </div>
                             </div>
                         </div>
@@ -51,22 +45,20 @@
                             </label>
                             <div class="col-sm-10">
                                 <div class="form-check">
-                                   
-                                    <input class="form-check-input" type="radio" name="role"
-                                        value="manager">
+
+                                    <input class="form-check-input" type="radio" name="role" value="manager" <%= user[0].role == 'manager' ? 'checked' : '' %>>
                                     <label class="form-check-label">
                                         Manager
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="role" value="programmer">
+                                    <input class="form-check-input" type="radio" name="role" value="programmer" <%= user[0].role == 'programmer' ? 'checked' : '' %>>
                                     <label class="form-check-label">
                                         Software Developer
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="role"
-                                        value="quality assurance">
+                                    <input class="form-check-input" type="radio" name="role" value="quality assurance" <%= user[0].role == 'quality assurance' ? 'checked' : '' %>>
                                     <label class="form-check-label">
                                         Quality Assurance
                                     </label>
@@ -76,7 +68,7 @@
 
                         <div class="row">
                             <div class="col-sm-10">
-                                <button type="submit" class="btn btn-primary">Add User</button>
+                                <button type="submit" class="btn btn-primary">Update</button>
                             </div>
                         </div>
                     </form>

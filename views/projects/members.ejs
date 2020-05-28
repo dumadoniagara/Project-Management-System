@@ -7,8 +7,9 @@
     <title>Home</title>
     <%_ include ../partials/css-bootstrap -%>
     <style>
-        .container-fluid {
-            margin-top: 4%;
+        body{
+            margin-top: 60px;
+            margin-bottom: 80px;
         }
     </style>
     <link rel="stylesheet" href="/stylesheets/sidebar.css">
@@ -143,12 +144,12 @@
                                 <tr>
                                     <th scope="row" <%= checkOptionMember.id ? '' : 'hidden' %>><%= index + 1 %></th>
                                     <td <%= checkOptionMember.name ? '' : 'hidden' %>><%= item.fullname %></td>
-                                    <td <%= checkOptionMember.position ? '' : 'hidden' %>><%= item.role ? item.role : 'Not Assigned'%></td>
+                                    <td <%= checkOptionMember.position ? '' : 'hidden' %>><%= item.role ? (item.role == 'programmer' ? 'software developer' : item.role ) : 'Not Assigned'%></td>
                                     <td>
-                                        <a href="projects/edit/<%= project[0].projectid %>">
+                                        <a href="<%= `/projects/members/${project[0].projectid}/edit/${item.userid}` %>">
                                             <button type="button" class="btn btn-success">Edit</button>
                                         </a>
-                                        <a href="projects/delete/<%= project[0].projectid %>">
+                                        <a href="<%= `/projects/members/${project[0].projectid}/delete/${item.userid}` %>">
                                             <button type="button" class="btn btn-danger">Delete</button>
                                         </a>
                                     </td>
@@ -173,15 +174,7 @@
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-        crossorigin="anonymous"></script>
+    <% include ../partials/footer %>
 </body>
 
 </html>

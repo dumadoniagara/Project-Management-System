@@ -46,7 +46,7 @@ module.exports = (db) => {
 
     function usersModelbyProjectId(id) {
         return new Promise((resolve, reject) => {
-            const sql = `SELECT CONCAT(firstname, ' ', lastname) AS fullname, members.role FROM users LEFT JOIN members ON users.userid = members.userid WHERE members.projectid = $1 ORDER BY fullname`;
+            const sql = `SELECT CONCAT(firstname, ' ', lastname) AS fullname, members.role, members.userid FROM users LEFT JOIN members ON users.userid = members.userid WHERE members.projectid = $1 ORDER BY fullname`;
             db.query(sql, [id], (err, result) => {
                 let data = result.rows;
                 resolve(data)
@@ -131,6 +131,16 @@ module.exports = (db) => {
         })
     }
 
+    function showUser(userid, projectid) {
+        return new Promise((resolve, reject) => {
+            db.query(`SELECT members.userid, CONCAT(firstname,' ', lastname) AS fullname, members.role FROM members LEFT JOIN users ON members.userid = users.userid WHERE members.userid = $1 AND members.projectid = $2`, [userid,projectid], (err, data) => {
+                let result = data.rows;
+                resolve(result);
+                reject(err);
+            })
+        })
+    }
+
     function showMembersWithConstraint(projectid) {
         return new Promise((resolve, reject) => {
             db.query(`SELECT userid, CONCAT(firstname,' ', lastname) AS fullname FROM users WHERE userid NOT IN (SELECT userid FROM members WHERE projectid = $1)`, [projectid], (err, data) => {
@@ -192,6 +202,25 @@ module.exports = (db) => {
         return new Promise((resolve, reject) => {
             let sqlInsert = `INSERT INTO members (projectid, userid, role) VALUES ($1,$2,$3)`
             db.query(sqlInsert, [form.projectId, form.user, form.role], (err) => {
+                resolve();
+                reject(err);
+            })
+        })
+    }
+
+    function editMember(form, userid) {
+        return new Promise((resolve, reject) => {
+            db.query(`UPDATE members SET role = $1 WHERE projectid = $2 AND userid = $3`, [form.role, form.projectId, userid], (err) => {
+                resolve();
+                reject(err);
+            })
+        })
+    }
+
+    function deleteMemberById(projectid, userid) {
+        return new Promise((resolve, reject) => {
+            let sqlDelete = `DELETE FROM members WHERE projectid = $1 AND userid = $2`;
+            db.query(sqlDelete, [projectid, userid], (err) => {
                 resolve();
                 reject(err);
             })
@@ -393,7 +422,7 @@ module.exports = (db) => {
     })
 
     router.get('/members/:id/add', (req, res) => {
-        const id = req.params.id;
+        const id = parseInt(req.params.id);
         Promise.all([showMembersWithConstraint(id), showProject(id)])
             .then(data => {
                 let [users, project] = data;
@@ -409,7 +438,7 @@ module.exports = (db) => {
     })
 
     router.post('/members/:id/add', (req, res) => {
-        const id = req.params.id;
+        const id = parseInt(req.params.id);
         const form = req.body;
         addProjectMember(form)
             .then(() => {
@@ -420,19 +449,47 @@ module.exports = (db) => {
             })
     })
 
-    // router.get('/test/:projectid', (req, res) => {
-    //     const projectid = req.params.projectid;
-    //     showMembersWithConstraint(projectid)
-    //         .then(users => {
-    //             res.status(200).json({
-    //             res.render('/')
-    //             users
-    //         })
-    //         .catch(err => {
-    //             console.log(err)
-    //         })
-    // })
+    router.get('/members/:projectid/edit/:userid', (req, res) => {
+        const projectid = parseInt(req.params.projectid);
+        const userid = parseInt(req.params.userid);
+        Promise.all([showProject(projectid), showUser(userid, projectid)])
+            .then((data) => {
+                let [project, user] = data;
+                res.render('projects/members/edit',{
+                // res.json({
+                    project,
+                    user
+                })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+    })
 
+    router.post('/members/:projectid/edit/:userid', (req, res) => {
+        const projectid = parseInt(req.params.projectid)
+        const userid = parseInt(req.params.userid);
+        const form = req.body;
+        editMember(form, userid)
+        .then(()=>{
+            res.redirect(`/projects/members/${projectid}`)
+        })
+        .catch(err =>{
+            console.log(err);
+        })
+    })
 
+    router.get('/members/:projectid/delete/:userid', (req, res) => {
+        const projectid = parseInt(req.params.projectid);
+        const userid = parseInt(req.params.userid);
+        deleteMemberById(projectid, userid)
+        .then(()=>{
+            res.redirect(`/projects/members/${projectid}`)
+        })
+        .catch(err => {
+            console.log(err);
+        })
+    })
+    
     return router;
 }
