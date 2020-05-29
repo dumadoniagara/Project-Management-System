@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <%_ include ../../partials/css-bootstrap -%>
+    <style>
+        body {
+            margin-top: 60px;
+            margin-bottom: 80px;
+        }
+
+        .content {
+            margin-left: 30px;
+        }
+    </style>
+    <link rel="stylesheet" href="/stylesheets/sidebar.css">
+</head>
+
+<body>
+    <%- include('../../partials/navbar'); %>
+    <div class="container-fluid">
+        <div class="row">
+            <%- include('../../partials/sidebar'); %>
+
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+                <div class="content">
+                    <h1>Add Issue</h1>
+                    <hr>
+                    <br>
+                    <form action="" method="POST">
+                        <input type="hidden" name="projectId" value="<%= project[0].projectid %>">
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">
+                                Tracker
+                            </label>
+                            <div class="col-sm-8">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tracker" value="bug">
+                                    <label class="form-check-label">
+                                        Bug
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tracker" value="feature">
+                                    <label class="form-check-label">
+                                        Feature
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tracker" value="support">
+                                    <label class="form-check-label">
+                                        Support
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">
+                                Subject
+                            </label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" name="subject" placeholder="Subject">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">
+                                Description
+                            </label>
+                            <div class="col-sm-8">
+                                <textarea class="form-control" name="subject" placeholder="Description"
+                                    rows="4"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">
+                                Status
+                            </label>
+                            <div class="col-sm-8">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" value="new">
+                                    <label class="form-check-label">
+                                        New
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" value="in progress">
+                                    <label class="form-check-label">
+                                        In Progress
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" value="resolved">
+                                    <label class="form-check-label">
+                                        Resolved
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" value="feedback">
+                                    <label class="form-check-label">
+                                        Feedback
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" value="closed">
+                                    <label class="form-check-label">
+                                        Closed
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" value="rejected">
+                                    <label class="form-check-label">
+                                        Rejected
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">
+                                Priority
+                            </label>
+                            <div class="col-sm-8">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="priority" value="normal">
+                                    <label class="form-check-label">
+                                        Normal
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="priority" value="high">
+                                    <label class="form-check-label">
+                                        High
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="priority" value="urgent">
+                                    <label class="form-check-label">
+                                        Urgent
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="priority" value="immediate">
+                                    <label class="form-check-label">
+                                        Immediate
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">Assignee</label>
+                            <div class="form-group col-sm-8">
+                                <select class="form-control" name="assignee">
+                                    <option selected disabled>Choose assignee...</option>
+                                    <option>2</option>
+                                    <option>3</option>
+                                    <option>4</option>
+                                    <option>5</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">Start Date</label>
+                            <div class="col-sm-8">
+                                <input class="form-control" name="startDate" type="date">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">Due Date</label>
+                            <div class="col-sm-8">
+                                <input class="form-control" name="dueDate" type="date">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">Estimated Time</label>
+                            <div class="col-auto">
+                                <div class="input-group mb-2">
+                                    <input type="text" name="estimatedTime" class="form-control"
+                                        placeholder="Estimated Time">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">Hours</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">Parent Task</label>
+                            <div class="form-group col-sm-8">
+                                <select class="form-control" name="parentTask">
+                                    <option selected disabled>Choose parent task...</option>
+                                    <option>2</option>
+                                    <option>3</option>
+                                    <option>4</option>
+                                    <option>5</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">Files</label>
+                            <div class="form-group col-sm-8">
+                                <div class="custom-file mb-3">
+                                    <input type="file" class="custom-file-input" >
+                                    <label class="custom-file-label">Choose file...</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-sm-10">
+                                <button type="submit" class="btn btn-primary">Add Issue</button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <% include ../../partials/footer %>
+    <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+
+</body>
+
+</html>

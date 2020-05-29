@@ -12,14 +12,31 @@ let checkOptionMember = {
     position: true
 }
 
+let checkOptionIssue = {
+    id: true,
+    subject: true,
+    tracker: true,
+    description: true,
+    status: true,
+    priority: true,
+    assignee: true,
+    startDate: true,
+    dueDate: true,
+    description: true,
+    estimateTime: true,
+    done: true,
+    author: true
+}
+
 module.exports = (db) => {
 
-    function projectsModel(sql) {
+    function projectsModel(search, limit, offset) {
         return new Promise((resolve, reject) => {
-            db.query(sql, (err, result) => {
+            const sqlAll = `SELECT projects.projectid, projects.name, STRING_AGG (users.firstname || ' ' || users.lastname,',' ORDER BY users.firstname, users.lastname) members FROM projects LEFT JOIN members ON projects.projectid = members.projectid LEFT JOIN users ON members.userid = users.userid ${search} GROUP BY projects.projectid LIMIT ${limit} OFFSET ${offset}`;
+            db.query(sqlAll, (err, result) => {
                 let data = result.rows;
                 if (data.length == 0) {
-                    reject(err)
+                    resolve(data = []);
                 }
                 for (i = 0; i < data.length; i++) {
                     if (data[i].members != null) {
@@ -227,6 +244,16 @@ module.exports = (db) => {
         })
     }
 
+    function showIssues(projectid) {
+        return new Promise((resolve, reject) => {
+            db.query(`SELECT * FROM issues WHERE projectid = $1`, [projectid], (err, data) => {
+                let result = data.rows;
+                resolve(result);
+                reject(err);
+            })
+        })
+    }
+
     // ============== ROUTES =========================================================
 
     router.get('/', function (req, res, next) {
@@ -244,7 +271,7 @@ module.exports = (db) => {
             isSearch = true;
         }
         if (checkName && name) {
-            query.push(`projects.name LIKE '%${name}%'`);
+            query.push(`projects.name ILIKE '%${name}%'`);
             isSearch = true;
         }
         if (checkMember && memberId) {
@@ -257,9 +284,7 @@ module.exports = (db) => {
         }
         console.log(search);
 
-        const sqlAll = `SELECT projects.projectid, projects.name, STRING_AGG (users.firstname || ' ' || users.lastname,',' ORDER BY users.firstname, users.lastname) members FROM projects LEFT JOIN members ON projects.projectid = members.projectid LEFT JOIN users ON members.userid = users.userid ${search} GROUP BY projects.projectid LIMIT ${limit} OFFSET ${offset}`;
-
-        Promise.all([usersModel(), projectsModel(sqlAll), pageModel()])
+        Promise.all([usersModel(), projectsModel(search, limit, offset), pageModel()])
             .then(result => {
                 const [memberList, data, totalPage] = result;
                 const pages = Math.ceil(totalPage[0].total / limit);
@@ -410,11 +435,11 @@ module.exports = (db) => {
             isSearch = true;
         }
         if (checkName && name) {
-            query.push(`CONCAT(users.firstname,' ',users.lastname) LIKE '%${name}%'`);
+            query.push(`CONCAT(users.firstname,' ',users.lastname) ILIKE '%${name}%'`);
             isSearch = true;
         }
         if (checkRole && role) {
-            query.push(`members.role LIKE '%${role}%'`);
+            query.push(`members.role = '${role}'`);
             isSearch = true;
         }
 
@@ -426,7 +451,7 @@ module.exports = (db) => {
             .then((data) => {
                 let [project, memberList] = data;
                 // res.status(200).json({
-                res.render('projects/members', {
+                res.render('projects/members/index', {
                     project,
                     memberList,
                     checkOptionMember
@@ -515,22 +540,52 @@ module.exports = (db) => {
             })
     })
 
-
-
-
-
-    router.get('/test/:projectid', (req, res) => {
-        const projectid = req.params.projectid;
-        showProject(projectid)
+    router.get('/issues/:projectid', (req, res) => {
+        const projectid = parseInt(req.params.projectid);
+        Promise.all([showProject(projectid), showIssues(projectid)])
             .then((data) => {
-                res.json({
-                    data
+                let [project, issues] = data;
+                res.render('projects/issues/index', {
+                    // res.json({
+                    project,
+                    issues,
+                    checkOptionIssue
                 })
             })
-            .catch((err) => {
+            .catch(err => {
                 console.log(err);
             })
     })
+
+    router.get('/issues/:projectid/add', (req, res) => {
+        const projectid = parseInt(req.params.projectid);
+        showProject(projectid)
+            .then((project) => {
+                res.render('projects/issues/add', {
+                    project
+                })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+    })
+
+
+
+
+
+    // router.get('/test/:projectid', (req, res) => {
+    //     const projectid = req.params.projectid;
+    //     showProject(projectid)
+    //         .then((data) => {
+    //             res.json({
+    //                 data
+    //             })
+    //         })
+    //         .catch((err) => {
+    //             console.log(err);
+    //         })
+    // })
 
     return router;
 }
