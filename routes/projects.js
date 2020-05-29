@@ -44,10 +44,10 @@ module.exports = (db) => {
         })
     }
 
-    function usersModelbyProjectId(id) {
+    function usersModelbyProjectId(projectid, search) {
         return new Promise((resolve, reject) => {
-            const sql = `SELECT CONCAT(firstname, ' ', lastname) AS fullname, members.role, members.userid FROM users LEFT JOIN members ON users.userid = members.userid WHERE members.projectid = $1 ORDER BY fullname`;
-            db.query(sql, [id], (err, result) => {
+            const sql = `SELECT CONCAT(firstname, ' ', lastname) AS fullname, members.role, members.userid FROM users LEFT JOIN members ON users.userid = members.userid WHERE members.projectid = $1 ${search} ORDER BY fullname`;
+            db.query(sql, [projectid], (err, result) => {
                 let data = result.rows;
                 resolve(data)
                 reject(err)
@@ -133,7 +133,7 @@ module.exports = (db) => {
 
     function showUser(userid, projectid) {
         return new Promise((resolve, reject) => {
-            db.query(`SELECT members.userid, CONCAT(firstname,' ', lastname) AS fullname, members.role FROM members LEFT JOIN users ON members.userid = users.userid WHERE members.userid = $1 AND members.projectid = $2`, [userid,projectid], (err, data) => {
+            db.query(`SELECT members.userid, CONCAT(firstname,' ', lastname) AS fullname, members.role FROM members LEFT JOIN users ON members.userid = users.userid WHERE members.userid = $1 AND members.projectid = $2`, [userid, projectid], (err, data) => {
                 let result = data.rows;
                 resolve(result);
                 reject(err);
@@ -151,9 +151,9 @@ module.exports = (db) => {
         })
     }
 
-    function showProject(id) {
+    function showProject(projectid) {
         return new Promise((resolve, reject) => {
-            db.query(`SELECT name, projectid FROM projects WHERE projectid = $1`, [id], (err, data) => {
+            db.query(`SELECT name, projectid FROM projects WHERE projectid = $1`, [projectid], (err, data) => {
                 let result = data.rows;
                 resolve(result);
                 reject(err);
@@ -239,7 +239,6 @@ module.exports = (db) => {
         const offset = (page - 1) * limit;
         let url = req.url.includes('page') ? req.url : `/projects?page=1&` + req.url.slice(2)
 
-        console.log(req.query);
         if (checkId && id) {
             query.push(`projects.projectid = ${parseInt(id)}`);
             isSearch = true;
@@ -375,9 +374,10 @@ module.exports = (db) => {
 
     // =============== PROJECT DETAIL PAGE ==============
 
-    router.get('/overview/:id', (req, res) => {
-        const id = parseInt(req.params.id);
-        Promise.all([showProject(id), usersModelbyProjectId(id)])
+    router.get('/overview/:projectid', (req, res) => {
+        const projectid = parseInt(req.params.projectid);
+        const search = "";
+        Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search)])
             .then((data) => {
                 let [project, memberList] = data;
                 // res.status(200).json({
@@ -395,9 +395,34 @@ module.exports = (db) => {
 
 
 
-    router.get('/members/:id', (req, res) => {
-        const id = parseInt(req.params.id);
-        Promise.all([showProject(id), usersModelbyProjectId(id)])
+    router.get('/members/:projectid', (req, res) => {
+        const projectid = parseInt(req.params.projectid);
+        let isSearch = false;
+        const { checkId, id, checkName, name, checkRole, role } = req.query;
+        let query = [];
+        let search = "";
+        // // const page = req.query.page || 1;
+        // // const limit = 100;
+        // // const offset = (page - 1) * limit;
+
+        if (checkId && id) {
+            query.push(`members.userid = ${parseInt(id)}`);
+            isSearch = true;
+        }
+        if (checkName && name) {
+            query.push(`CONCAT(users.firstname,' ',users.lastname) LIKE '%${name}%'`);
+            isSearch = true;
+        }
+        if (checkRole && role) {
+            query.push(`members.role LIKE '%${role}%'`);
+            isSearch = true;
+        }
+
+        if (isSearch) {
+            search += `AND ${query.join(' AND ')}`;
+        }
+
+        Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search)])
             .then((data) => {
                 let [project, memberList] = data;
                 // res.status(200).json({
@@ -406,7 +431,6 @@ module.exports = (db) => {
                     memberList,
                     checkOptionMember
                 })
-
             }).catch(err => {
                 console.log(err);
             })
@@ -455,8 +479,8 @@ module.exports = (db) => {
         Promise.all([showProject(projectid), showUser(userid, projectid)])
             .then((data) => {
                 let [project, user] = data;
-                res.render('projects/members/edit',{
-                // res.json({
+                res.render('projects/members/edit', {
+                    // res.json({
                     project,
                     user
                 })
@@ -471,25 +495,42 @@ module.exports = (db) => {
         const userid = parseInt(req.params.userid);
         const form = req.body;
         editMember(form, userid)
-        .then(()=>{
-            res.redirect(`/projects/members/${projectid}`)
-        })
-        .catch(err =>{
-            console.log(err);
-        })
+            .then(() => {
+                res.redirect(`/projects/members/${projectid}`)
+            })
+            .catch(err => {
+                console.log(err);
+            })
     })
 
     router.get('/members/:projectid/delete/:userid', (req, res) => {
         const projectid = parseInt(req.params.projectid);
         const userid = parseInt(req.params.userid);
         deleteMemberById(projectid, userid)
-        .then(()=>{
-            res.redirect(`/projects/members/${projectid}`)
-        })
-        .catch(err => {
-            console.log(err);
-        })
+            .then(() => {
+                res.redirect(`/projects/members/${projectid}`)
+            })
+            .catch(err => {
+                console.log(err);
+            })
     })
-    
+
+
+
+
+
+    router.get('/test/:projectid', (req, res) => {
+        const projectid = req.params.projectid;
+        showProject(projectid)
+            .then((data) => {
+                res.json({
+                    data
+                })
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+    })
+
     return router;
 }
