@@ -1,5 +1,7 @@
 var express = require('express');
 var router = express.Router();
+var moment = require('moment');
+
 let checkOption = {
     id: true,
     name: true,
@@ -254,7 +256,7 @@ module.exports = (db) => {
 
     function showIssues(projectid) {
         return new Promise((resolve, reject) => {
-            db.query(`SELECT * FROM issues WHERE projectid = $1`, [projectid], (err, data) => {
+            db.query(`SELECT issues.*, CONCAT(users.firstname,' ',users.lastname) as authorname FROM issues LEFT JOIN users ON issues.author = users.userid WHERE issues.projectid = $1`, [projectid], (err, data) => {
                 let result = data.rows;
                 resolve(result);
                 reject(err);
@@ -575,12 +577,13 @@ module.exports = (db) => {
         Promise.all([showProject(projectid), showIssues(projectid)])
             .then((data) => {
                 let [project, issues] = data;
-                res.render('projects/issues/index', {
-                    // res.json({
+                // res.render('projects/issues/index', {
+                    res.json({
                     project,
                     issues,
                     checkOptionIssue,
-                    messages: req.flash('issuesMessage')
+                    messages: req.flash('issuesMessage'),
+                    moment
                 })
             })
             .catch(err => {
@@ -606,7 +609,7 @@ module.exports = (db) => {
     })
 
     router.post('/issues/:projectid/add', isLoggedIn, (req, res) => {
-        const authorid = req.session.user.userid;
+        const authorid = req.session.user.name;
         const projectid = parseInt(req.params.projectid);
         let form = req.body;
         addIssue(form, authorid)
@@ -632,9 +635,6 @@ module.exports = (db) => {
                 console.log(err);
             })
     })
-
-
-
 
 
     // router.get('/test/:projectid', (req, res) => {
