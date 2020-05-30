@@ -27,7 +27,7 @@
 
             <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
                 <div class="content">
-                    <h1>Add Issue</h1>
+                    <h1>New Issue</h1>
                     <hr>
                     <br>
                     <form action="" method="POST">
@@ -72,7 +72,7 @@
                                 Description
                             </label>
                             <div class="col-sm-8">
-                                <textarea class="form-control" name="subject" placeholder="Description"
+                                <textarea class="form-control" name="description" placeholder="Description"
                                     rows="4"></textarea>
                             </div>
                         </div>
@@ -90,35 +90,35 @@
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" value="in progress">
+                                    <input class="form-check-input" type="radio" name="status" value="in progress" disabled>
                                     <label class="form-check-label">
                                         In Progress
                                     </label>
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" value="resolved">
+                                    <input class="form-check-input" type="radio" name="status" value="resolved" disabled>
                                     <label class="form-check-label">
                                         Resolved
                                     </label>
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" value="feedback">
+                                    <input class="form-check-input" type="radio" name="status" value="feedback" disabled>
                                     <label class="form-check-label">
                                         Feedback
                                     </label>
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" value="closed">
+                                    <input class="form-check-input" type="radio" name="status" value="closed" disabled>
                                     <label class="form-check-label">
                                         Closed
                                     </label>
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" value="rejected">
+                                    <input class="form-check-input" type="radio" name="status" value="rejected" disabled>
                                     <label class="form-check-label">
                                         Rejected
                                     </label>
@@ -166,10 +166,9 @@
                             <div class="form-group col-sm-8">
                                 <select class="form-control" name="assignee">
                                     <option selected disabled>Choose assignee...</option>
-                                    <option>2</option>
-                                    <option>3</option>
-                                    <option>4</option>
-                                    <option>5</option>
+                                    <% users.forEach( item => { %>
+                                    <option value="<%= item.userid %>"> <%= item.fullname %> </option>
+                                    <% }) %>
                                 </select>
                             </div>
                         </div>
@@ -192,7 +191,7 @@
                             <label class="col-sm-2 col-form-label">Estimated Time</label>
                             <div class="col-auto">
                                 <div class="input-group mb-2">
-                                    <input type="text" name="estimatedTime" class="form-control"
+                                    <input type="number" name="estimatedTime" class="form-control"
                                         placeholder="Estimated Time">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text">Hours</div>
@@ -202,14 +201,21 @@
                         </div>
 
                         <div class="form-group row">
-                            <label class="col-sm-2 col-form-label">Parent Task</label>
+                            <label class="col-sm-2 col-form-label">Done</label>
                             <div class="form-group col-sm-8">
-                                <select class="form-control" name="parentTask">
-                                    <option selected disabled>Choose parent task...</option>
-                                    <option>2</option>
-                                    <option>3</option>
-                                    <option>4</option>
-                                    <option>5</option>
+                                <select class="form-control" name="done" required>
+                                    <option selected disabled>Percent done... </option>
+                                    <option value="0">0%</option>
+                                    <option value="10">10%</option>
+                                    <option value="20">20%</option>
+                                    <option value="30">30%</option>
+                                    <option value="40">40%</option>
+                                    <option value="50">50%</option>
+                                    <option value="60">60%</option>
+                                    <option value="70">70%</option>
+                                    <option value="80">80%</option>
+                                    <option value="90">90%</option>
+                                    <option value="100">100%</option>
                                 </select>
                             </div>
                         </div>
@@ -218,7 +224,7 @@
                             <label class="col-sm-2 col-form-label">Files</label>
                             <div class="form-group col-sm-8">
                                 <div class="custom-file mb-3">
-                                    <input type="file" class="custom-file-input" >
+                                    <input type="file" class="custom-file-input">
                                     <label class="custom-file-label">Choose file...</label>
                                 </div>
                             </div>
@@ -229,7 +235,6 @@
                                 <button type="submit" class="btn btn-primary">Add Issue</button>
                             </div>
                         </div>
-
                     </form>
                 </div>
             </main>

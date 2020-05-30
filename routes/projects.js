@@ -28,6 +28,14 @@ let checkOptionIssue = {
     author: true
 }
 
+const isLoggedIn = (req, res, next) => {
+    if (req.session.user) {
+        next();
+    } else {
+        res.redirect('/');
+    }
+}
+
 module.exports = (db) => {
 
     function projectsModel(search, limit, offset) {
@@ -254,9 +262,31 @@ module.exports = (db) => {
         })
     }
 
+    function addIssue(form, authorid) {
+        return new Promise((resolve, reject) => {
+            let sqlInsert = `INSERT INTO issues (projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, author, createddate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`
+            db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, form.assignee, form.startDate, form.dueDate, form.estimatedTime, form.done, authorid], (err) => {
+                resolve();
+                reject(err);
+            })
+        })
+    }
+
+    function deleteIssue(projectid, issueid) {
+        return new Promise((resolve, reject) => {
+            let sql = `DELETE FROM issues WHERE projectid = $1 AND issueid = $2`
+            db.query(sql, [projectid, issueid], (err) => {
+                resolve();
+                reject(err);
+            })
+        })
+    }
+
+
+
     // ============== ROUTES =========================================================
 
-    router.get('/', function (req, res, next) {
+    router.get('/', isLoggedIn, function (req, res, next) {
         const { checkId, id, checkName, name, checkMember, memberId } = req.query;
         let isSearch = false;
         let query = [];
@@ -304,7 +334,7 @@ module.exports = (db) => {
             })
     });
 
-    router.post('/option', function (req, res) {
+    router.post('/option', isLoggedIn, function (req, res) {
         const { checkId, checkName, checkMembers } = req.body;
         checkOption.id = checkId;
         checkOption.name = checkName;
@@ -313,7 +343,7 @@ module.exports = (db) => {
         res.redirect('/projects');
     })
 
-    router.get('/add', (req, res) => {
+    router.get('/add', isLoggedIn, (req, res) => {
         const sqlMembers = `SELECT DISTINCT (userid), CONCAT(firstname, ' ', lastname) AS fullname FROM users ORDER BY fullname`;
         usersModel(sqlMembers)
             .then((memberList) => {
@@ -327,7 +357,7 @@ module.exports = (db) => {
             })
     })
 
-    router.post('/add', (req, res) => {
+    router.post('/add', isLoggedIn, (req, res) => {
         let form = req.body;
 
         addProject(form)
@@ -345,7 +375,7 @@ module.exports = (db) => {
             })
     })
 
-    router.get('/delete/:id', (req, res) => {
+    router.get('/delete/:id', isLoggedIn, (req, res) => {
         const id = parseInt(req.params.id);
         Promise.all([deleteProject(id), deleteProjectMembers(id)])
             .then(() => {
@@ -356,7 +386,7 @@ module.exports = (db) => {
             })
     })
 
-    router.get('/edit/:id', (req, res) => {
+    router.get('/edit/:id', isLoggedIn, (req, res) => {
         const id = parseInt(req.params.id);
         Promise.all([usersModel(), showMembers(id), showProject(id)])
             .then((data) => {
@@ -378,7 +408,7 @@ module.exports = (db) => {
             })
     })
 
-    router.post('/edit', (req, res) => {
+    router.post('/edit', isLoggedIn, (req, res) => {
         let form = req.body;
         Promise.all([updateProjectName(form), deleteMember(form)])
             .then(() => {
@@ -399,7 +429,7 @@ module.exports = (db) => {
 
     // =============== PROJECT DETAIL PAGE ==============
 
-    router.get('/overview/:projectid', (req, res) => {
+    router.get('/overview/:projectid', isLoggedIn, (req, res) => {
         const projectid = parseInt(req.params.projectid);
         const search = "";
         Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search)])
@@ -420,7 +450,7 @@ module.exports = (db) => {
 
 
 
-    router.get('/members/:projectid', (req, res) => {
+    router.get('/members/:projectid', isLoggedIn, (req, res) => {
         const projectid = parseInt(req.params.projectid);
         let isSearch = false;
         const { checkId, id, checkName, name, checkRole, role } = req.query;
@@ -461,7 +491,7 @@ module.exports = (db) => {
             })
     })
 
-    router.post('/members/:id', function (req, res) {
+    router.post('/members/:id', isLoggedIn, function (req, res) {
         const id = parseInt(req.params.id);
         const { checkId, checkName, checkPosition } = req.body;
         checkOptionMember.id = checkId;
@@ -470,7 +500,7 @@ module.exports = (db) => {
         res.redirect(`/projects/members/${id}`);
     })
 
-    router.get('/members/:id/add', (req, res) => {
+    router.get('/members/:id/add', isLoggedIn, (req, res) => {
         const id = parseInt(req.params.id);
         Promise.all([showMembersWithConstraint(id), showProject(id)])
             .then(data => {
@@ -486,7 +516,7 @@ module.exports = (db) => {
             })
     })
 
-    router.post('/members/:id/add', (req, res) => {
+    router.post('/members/:id/add', isLoggedIn, (req, res) => {
         const id = parseInt(req.params.id);
         const form = req.body;
         addProjectMember(form)
@@ -498,7 +528,7 @@ module.exports = (db) => {
             })
     })
 
-    router.get('/members/:projectid/edit/:userid', (req, res) => {
+    router.get('/members/:projectid/edit/:userid', isLoggedIn, (req, res) => {
         const projectid = parseInt(req.params.projectid);
         const userid = parseInt(req.params.userid);
         Promise.all([showProject(projectid), showUser(userid, projectid)])
@@ -515,7 +545,7 @@ module.exports = (db) => {
             })
     })
 
-    router.post('/members/:projectid/edit/:userid', (req, res) => {
+    router.post('/members/:projectid/edit/:userid', isLoggedIn, (req, res) => {
         const projectid = parseInt(req.params.projectid)
         const userid = parseInt(req.params.userid);
         const form = req.body;
@@ -528,7 +558,7 @@ module.exports = (db) => {
             })
     })
 
-    router.get('/members/:projectid/delete/:userid', (req, res) => {
+    router.get('/members/:projectid/delete/:userid', isLoggedIn, (req, res) => {
         const projectid = parseInt(req.params.projectid);
         const userid = parseInt(req.params.userid);
         deleteMemberById(projectid, userid)
@@ -540,7 +570,7 @@ module.exports = (db) => {
             })
     })
 
-    router.get('/issues/:projectid', (req, res) => {
+    router.get('/issues/:projectid', isLoggedIn, (req, res) => {
         const projectid = parseInt(req.params.projectid);
         Promise.all([showProject(projectid), showIssues(projectid)])
             .then((data) => {
@@ -549,7 +579,8 @@ module.exports = (db) => {
                     // res.json({
                     project,
                     issues,
-                    checkOptionIssue
+                    checkOptionIssue,
+                    messages: req.flash('issuesMessage')
                 })
             })
             .catch(err => {
@@ -557,13 +588,45 @@ module.exports = (db) => {
             })
     })
 
-    router.get('/issues/:projectid/add', (req, res) => {
+    router.get('/issues/:projectid/add', isLoggedIn, (req, res) => {
         const projectid = parseInt(req.params.projectid);
-        showProject(projectid)
-            .then((project) => {
+        const search = "";
+        Promise.all([usersModelbyProjectId(projectid, search), showProject(projectid)])
+            .then((data) => {
+                let [users, project, issues] = data;
                 res.render('projects/issues/add', {
+                    // res.json({
+                    users,
                     project
                 })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+    })
+
+    router.post('/issues/:projectid/add', isLoggedIn, (req, res) => {
+        const authorid = req.session.user.userid;
+        const projectid = parseInt(req.params.projectid);
+        let form = req.body;
+        addIssue(form, authorid)
+            .then(() => {
+                req.flash('issuesMessage', 'New issues added successfully!');
+                res.redirect(`/projects/issues/${projectid}`)
+            })
+            .catch(err => {
+                console.log(err);
+            })
+
+    })
+
+    router.get('/issues/:projectid/delete/:issueid', isLoggedIn, (req, res) => {
+        const projectid = parseInt(req.params.projectid);
+        const issueid = parseInt(req.params.issueid);
+        deleteIssue(projectid, issueid)
+            .then(() => {
+                req.flash('issuesMessage', 'Issue has been deleted');
+                res.redirect(`/projects/issues/${projectid}`)
             })
             .catch(err => {
                 console.log(err);

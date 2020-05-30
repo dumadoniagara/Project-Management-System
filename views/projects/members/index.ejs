@@ -135,7 +135,7 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th scope="col" <%= checkOptionMember.id ? '' : 'hidden' %>>#</th>
+                                    <th scope="col" <%= checkOptionMember.id ? '' : 'hidden' %>>User ID</th>
                                     <th scope="col" <%= checkOptionMember.name? '' : 'hidden' %>>Name</th>
                                     <th scope="col" <%= checkOptionMember.position ? '' : 'hidden' %>>Position</th>
                                     <th scope="col">Action</th>
@@ -144,7 +144,7 @@
                             <tbody>
                                 <% memberList.forEach((item, index) => { %>
                                 <tr>
-                                    <th scope="row" <%= checkOptionMember.id ? '' : 'hidden' %>><%= index + 1 %></th>
+                                    <th scope="row" <%= checkOptionMember.id ? '' : 'hidden' %>><%= item.userid %></th>
                                     <td <%= checkOptionMember.name ? '' : 'hidden' %>><%= item.fullname %></td>
                                     <td <%= checkOptionMember.position ? '' : 'hidden' %>><%= item.role ? (item.role == 'programmer' ? 'software developer' : item.role ) : 'Not Assigned'%></td>
                                     <td>

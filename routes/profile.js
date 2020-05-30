@@ -58,7 +58,7 @@ module.exports = (db) => {
     }
 
 
-    router.get('/', function (req, res, next) {
+    router.get('/', isLoggedIn, function (req, res, next) {
         let user = req.session.user;
         profileModel(user.userid)
             .then(data => {
@@ -75,7 +75,7 @@ module.exports = (db) => {
             })
     })
 
-    router.post('/', function (req, res, next) {
+    router.post('/', isLoggedIn, function (req, res, next) {
         let data = req.body;
         let user = req.session.user;
         userEdit(user, data)
