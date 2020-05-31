@@ -30,7 +30,7 @@
                     <h1>New Issue</h1>
                     <hr>
                     <br>
-                    <form action="" method="POST">
+                    <form action="" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="projectId" value="<%= project[0].projectid %>">
                         <div class="form-group row">
                             <label class="col-sm-2 col-form-label">
@@ -221,11 +221,11 @@
                         </div>
 
                         <div class="form-group row">
-                            <label class="col-sm-2 col-form-label">Files</label>
+                            <label class="col-sm-2 col-form-label" for="file-upload">Files</label>
                             <div class="form-group col-sm-8">
                                 <div class="custom-file mb-3">
-                                    <input type="file" class="custom-file-input">
-                                    <label class="custom-file-label">Choose file...</label>
+                                    <input type="file" name="file" class="custom-file-input">
+                                    <label class="custom-file-label">No file choosen..</label>
                                 </div>
                             </div>
                         </div>

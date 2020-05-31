@@ -246,7 +246,8 @@
                                     <th scope="col" <%= checkOptionIssue.assignee ? '' : 'hidden' %>>Assignee</th>
                                     <th scope="col" <%= checkOptionIssue.startDate ? '' : 'hidden' %>>Start Date</th>
                                     <th scope="col" <%= checkOptionIssue.dueDate ? '' : 'hidden' %>>Due Date</th>
-                                    <th scope="col" <%= checkOptionIssue.estimateTime ? '' : 'hidden' %>>Estimated Time (Hours)
+                                    <th scope="col" <%= checkOptionIssue.estimateTime ? '' : 'hidden' %>>Estimated Time
+                                        (Hours)
                                     </th>
                                     <th scope="col" <%= checkOptionIssue.done ? '' : 'hidden' %>>Done</th>
                                     <th scope="col" <%= checkOptionIssue.author ? '' : 'hidden' %>>Author</th>
@@ -274,17 +275,25 @@
                                     <td <%= checkOptionIssue.description ? '' : 'hidden' %>><%= item.description %></td>
                                     <td <%= checkOptionIssue.status ? '' : 'hidden' %>><%= item.status %></td>
                                     <td <%= checkOptionIssue.priority ? '' : 'hidden' %>><%= item.priority %></td>
-                                    <td <%= checkOptionIssue.assignee ? '' : 'hidden' %>><%= item.assignee %></td>
+                                    <td <%= checkOptionIssue.assignee ? '' : 'hidden' %>>
+                                        <% assignee.forEach(element => { %>
+                                        <%= element.userid == item.assignee ? element.fullname : '' %>
+                                        <% }); %>
+                                    </td>
                                     <td <%= checkOptionIssue.startDate ? '' : 'hidden' %>><%= 
                                     moment(item.startdate).format("MMMM Do, YYYY") %></td>
                                     <td <%= checkOptionIssue.dueDate ? '' : 'hidden' %>>
                                         <%= 
                                     moment(item.duedate).format("MMMM Do, YYYY") %></td>
-                                    <td <%= checkOptionIssue.estimateTime ? '' : 'hidden' %>><%= item.estimatedtime %>
+                                    <td <%= checkOptionIssue.estimateTime ? '' : 'hidden' %>>
+                                        <%= item.estimatedtime == 1 ? item.estimatedtime + ' Hour' : item.estimatedtime + ' Hours' %>
                                     </td>
                                     <td <%= checkOptionIssue.done ? '' : 'hidden' %>><%= item.done %>%</td>
                                     <td <%= checkOptionIssue.author ? '' : 'hidden' %>><%= item.authorname %></td>
-                                    <td>File (?) </td>
+                                    <td><a
+                                            href="/upload/<%= item.files ? item.files : '#'%>"><%= item.files ? 'File' : 'No file attached' %></a>
+                                    </td>
+
 
 
                                     <td>
