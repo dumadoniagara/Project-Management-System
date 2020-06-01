@@ -265,13 +265,31 @@ module.exports = (db) => {
         })
     }
 
-    function addIssue(form, authorid, fileName) {
+    function showIssueById(projectid, issueid) {
         return new Promise((resolve, reject) => {
-            let sqlInsert = `INSERT INTO issues (projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, author, files, createddate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())`
-            db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, form.assignee, form.startDate, form.dueDate, form.estimatedTime, form.done, authorid, fileName], (err) => {
-                resolve();
+            db.query(`SELECT issues.*, CONCAT(users.firstname,' ',users.lastname) as authorname FROM issues LEFT JOIN users ON issues.author = users.userid WHERE issues.projectid = $1 AND issues.issueid = $2 `, [projectid, issueid], (err, data) => {
+                let result = data.rows;
+                resolve(result);
                 reject(err);
             })
+        })
+    }
+
+    function addIssue(form, authorid, fileName) {
+        return new Promise((resolve, reject) => {
+            if (fileName) {
+                let sqlInsert = `INSERT INTO issues (projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, author, files, createddate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())`
+                db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, form.assignee, form.startDate, form.dueDate, form.estimatedTime, form.done, authorid, fileName], (err) => {
+                    resolve();
+                    reject(err);
+                })
+            } else {
+                let sqlInsert = `INSERT INTO issues (projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, author, createddate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`
+                db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, form.assignee, form.startDate, form.dueDate, form.estimatedTime, form.done, authorid], (err) => {
+                    resolve();
+                    reject(err);
+                })
+            }
         })
     }
 
@@ -461,8 +479,6 @@ module.exports = (db) => {
     })
 
 
-
-
     router.get('/members/:projectid', isLoggedIn, (req, res) => {
         const projectid = parseInt(req.params.projectid);
         let isSearch = false;
@@ -639,8 +655,7 @@ module.exports = (db) => {
                     console.log(err);
                 })
         } else {
-            let fileName = "";
-            addIssue(form, authorid, fileName)
+            addIssue(form, authorid)
                 .then(() => {
                     req.flash('issuesMessage', 'New issues added successfully!');
                     res.redirect(`/projects/issues/${projectid}`)
@@ -662,6 +677,37 @@ module.exports = (db) => {
             .catch(err => {
                 console.log(err);
             })
+    })
+
+    router.get('/issues/:projectid/edit/:issueid', isLoggedIn, (req, res) => {
+        const projectid = parseInt(req.params.projectid);
+        const issueid = parseInt(req.params.issueid);
+        const search = "";
+        Promise.all([usersModelbyProjectId(projectid, search), showProject(projectid), showIssueById(projectid, issueid)])
+            .then((data) => {
+                let [users, project, issue] = data;
+                res.render('projects/issues/edit', {
+                    // res.json({
+                    users,
+                    project,
+                    issue: issue[0],
+                    moment
+                })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+    })
+
+    router.post('/issues/:projectid/edit/:issueid', isLoggedIn, (req, res) => {
+        const issueid = parseInt(req.params.issueid);
+        const projectid = parseInt(req.params.projectid);
+        form = req.body;
+        fileName = req.files.file;
+        res.json({
+            form,
+            fileName
+        })
     })
 
 

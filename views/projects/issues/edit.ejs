@@ -27,7 +27,7 @@
 
             <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
                 <div class="content">
-                    <h1>New Issue</h1>
+                    <h1>Edit Issue</h1>
                     <hr>
                     <br>
                     <form action="" method="POST" enctype="multipart/form-data">
@@ -38,19 +38,19 @@
                             </label>
                             <div class="col-sm-8">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="tracker" value="bug" required>
+                                    <input class="form-check-input" type="radio" name="tracker" value="bug" <%= issue.tracker == 'bug' ? 'checked': 'disabled' %>>
                                     <label class="form-check-label">
                                         Bug
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="tracker" value="feature">
+                                    <input class="form-check-input" type="radio" name="tracker" value="feature" <%= issue.tracker == 'feature' ? 'checked': 'disabled' %>>
                                     <label class="form-check-label">
                                         Feature
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="tracker" value="support">
+                                    <input class="form-check-input" type="radio" name="tracker" value="support" <%= issue.tracker == 'support' ? 'checked': 'disabled' %>>
                                     <label class="form-check-label">
                                         Support
                                     </label>
@@ -63,7 +63,7 @@
                                 Subject
                             </label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" name="subject" placeholder="Subject" required>
+                                <input type="text" class="form-control" name="subject" value="<%= issue.subject %>">
                             </div>
                         </div>
 
@@ -72,8 +72,8 @@
                                 Description
                             </label>
                             <div class="col-sm-8">
-                                <textarea class="form-control" name="description" placeholder="Description"
-                                    rows="4" required></textarea>
+                                <textarea class="form-control" name="description"
+                                    rows="4"><%= issue.description %></textarea>
                             </div>
                         </div>
 
@@ -83,42 +83,42 @@
                             </label>
                             <div class="col-sm-8">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" value="new" required>
+                                    <input class="form-check-input" type="radio" name="status" value="new" <%= issue.status == 'new' ? 'checked': '' %>>
                                     <label class="form-check-label">
                                         New
                                     </label>
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" value="in progress" disabled>
+                                    <input class="form-check-input" type="radio" name="status" value="in progress" <%= issue.status == 'in progress' ? 'checked': '' %>>
                                     <label class="form-check-label">
                                         In Progress
                                     </label>
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" value="resolved" disabled>
+                                    <input class="form-check-input" type="radio" name="status" value="resolved" <%= issue.status == 'resolved' ? 'checked': '' %>>
                                     <label class="form-check-label">
                                         Resolved
                                     </label>
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" value="feedback" disabled>
+                                    <input class="form-check-input" type="radio" name="status" value="feedback" <%= issue.status == 'feedback' ? 'checked': '' %>>
                                     <label class="form-check-label">
                                         Feedback
                                     </label>
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" value="closed" disabled>
+                                    <input class="form-check-input" type="radio" name="status" value="closed" <%= issue.status == 'closed' ? 'checked': '' %>>
                                     <label class="form-check-label">
                                         Closed
                                     </label>
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" value="rejected" disabled>
+                                    <input class="form-check-input" type="radio" name="status" value="rejected" <%= issue.status == 'rejected' ? 'checked': '' %>>
                                     <label class="form-check-label">
                                         Rejected
                                     </label>
@@ -132,28 +132,28 @@
                             </label>
                             <div class="col-sm-8">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="priority" value="normal" required>
+                                    <input class="form-check-input" type="radio" name="priority" value="normal" <%= issue.priority == 'normal' ? 'checked': '' %>>
                                     <label class="form-check-label">
                                         Normal
                                     </label>
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="priority" value="high">
+                                    <input class="form-check-input" type="radio" name="priority" value="high" <%= issue.priority == 'high' ? 'checked': '' %>>
                                     <label class="form-check-label">
                                         High
                                     </label>
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="priority" value="urgent">
+                                    <input class="form-check-input" type="radio" name="priority" value="urgent" <%= issue.priority == 'urgent' ? 'checked': '' %>>
                                     <label class="form-check-label">
                                         Urgent
                                     </label>
                                 </div>
 
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="priority" value="immediate">
+                                    <input class="form-check-input" type="radio" name="priority" value="immediate" <%= issue.priority == 'immediate' ? 'checked': '' %>>
                                     <label class="form-check-label">
                                         Immediate
                                     </label>
@@ -164,8 +164,8 @@
                         <div class="form-group row">
                             <label class="col-sm-2 col-form-label">Assignee</label>
                             <div class="form-group col-sm-8">
-                                <select class="form-control" name="assignee" required>
-                                    <option selected disabled value="">Choose assignee...</option>
+                                <select class="form-control" name="assignee">
+                                    <option selected ></option>
                                     <% users.forEach( item => { %>
                                     <option value="<%= item.userid %>"> <%= item.fullname %> </option>
                                     <% }) %>
@@ -176,14 +176,14 @@
                         <div class="form-group row">
                             <label class="col-sm-2 col-form-label">Start Date</label>
                             <div class="col-sm-8">
-                                <input class="form-control" name="startDate" type="date" required>
+                                <input class="form-control" name="startDate" type="date" value="<%= moment(issue.startdate).format('YYYY-MM-DD') %>" disabled>
                             </div>
                         </div>
 
                         <div class="form-group row">
                             <label class="col-sm-2 col-form-label">Due Date</label>
                             <div class="col-sm-8">
-                                <input class="form-control" name="dueDate" type="date" required>
+                                <input class="form-control" name="dueDate" type="date" value="<%= moment(issue.duedate).format('YYYY-MM-DD')%>">
                             </div>
                         </div>
 
@@ -192,7 +192,7 @@
                             <div class="col-auto">
                                 <div class="input-group mb-2">
                                     <input type="number" name="estimatedTime" class="form-control"
-                                        placeholder="Estimated Time" required>
+                                        placeholder="Estimated Time" value="<%= issue.estimatedtime %>" disabled>
                                     <div class="input-group-prepend">
                                         <div class="input-group-text">Hours</div>
                                     </div>
@@ -201,22 +201,62 @@
                         </div>
 
                         <div class="form-group row">
-                            <label class="col-sm-2 col-form-label" for="done">Done</label>
+                            <label class="col-sm-2 col-form-label">Done</label>
                             <div class="form-group col-sm-8">
-                                <select class="form-control" name="done" id="done" title="Done percentage..." required>
-                                    <option value="0" selected disabled>Choose done percentage..</option>
-                                    <option value="0" >0%</option>
-                                    <option value="10">10%</option>
-                                    <option value="20">20%</option>
-                                    <option value="30">30%</option>
-                                    <option value="40">40%</option>
-                                    <option value="50">50%</option>
-                                    <option value="60">60%</option>
-                                    <option value="70">70%</option>
-                                    <option value="80">80%</option>
-                                    <option value="90">90%</option>
-                                    <option value="100">100%</option>
+                                <select class="form-control" name="done" required>
+                                    <option value="0" <%= issue.done == 0 ? 'selected' : '' %>>0%</option>
+                                    <option value="10" <%= issue.done == 10 ? 'selected' : '' %>>10%</option>
+                                    <option value="20" <%= issue.done == 20 ? 'selected' : '' %>>20%</option>
+                                    <option value="30" <%= issue.done == 30 ? 'selected' : '' %>>30%</option>
+                                    <option value="40" <%= issue.done == 40 ? 'selected' : '' %>>40%</option>
+                                    <option value="50" <%= issue.done == 50 ? 'selected' : '' %>>50%</option>
+                                    <option value="60" <%= issue.done == 60 ? 'selected' : '' %>>60%</option>
+                                    <option value="70" <%= issue.done == 70 ? 'selected' : '' %>>70%</option>
+                                    <option value="80" <%= issue.done == 80 ? 'selected' : '' %>>80%</option>
+                                    <option value="90" <%= issue.done == 90 ? 'selected' : '' %>>90%</option>
+                                    <option value="100" <%= issue.done == 100 ? 'selected' : '' %>>100%</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">Parent Task</label>
+                            <div class="form-group col-sm-8">
+                                <select class="form-control" name="parentTask" required>
+                                    <option value="<%= issue.parenttask %>"> <%= issue.parenttask %> </option>
+    
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">Spent Time</label>
+                            <div class="col-auto">
+                                <div class="input-group mb-2">
+                                    <input type="number" name="spentTime" class="form-control"
+                                         value="<%= issue.spenttime %>">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">Hours</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">
+                                Target Version
+                            </label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" name="targetVersion" value="" placeholder="Ex: V 1.0">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">
+                                Author
+                            </label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" name="targetVersion" value="contoh dulu" disabled>
                             </div>
                         </div>
 
@@ -232,7 +272,7 @@
 
                         <div class="form-group row">
                             <div class="col-sm-10">
-                                <button type="submit" class="btn btn-primary">Add Issue</button>
+                                <button type="submit" class="btn btn-primary">Update Issue</button>
                             </div>
                         </div>
                     </form>
@@ -241,11 +281,10 @@
         </div>
     </div>
 
-
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <% include ../../partials/footer %>
-    <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+    
 
 </body>
 
