@@ -294,13 +294,13 @@ module.exports = (db) => {
         return new Promise((resolve, reject) => {
             if (fileName) {
                 let sqlInsert = `INSERT INTO issues (projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, author, files, createddate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())`
-                db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, form.assignee, form.startDate, form.dueDate, form.estimatedTime, form.done, authorid, fileName], (err) => {
+                db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.startDate, form.dueDate, parseInt(form.estimatedTime), parseInt(form.done), authorid, fileName], (err) => {
                     resolve();
                     reject(err);
                 })
             } else {
                 let sqlInsert = `INSERT INTO issues (projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, author, createddate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`
-                db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, form.assignee, form.startDate, form.dueDate, form.estimatedTime, form.done, authorid], (err) => {
+                db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.startDate, form.dueDate, parseInt(form.estimatedTime), parseInt(form.done), authorid], (err) => {
                     resolve();
                     reject(err);
                 })
@@ -310,14 +310,19 @@ module.exports = (db) => {
 
     function updateIssue(issueid, form) {
         return new Promise((resolve, reject) => {
+            let closeddate = false;
+            if(form.status == 'closed'){
+                closeddate = true;
+            }
+
             if (form.file) {
-                let sqlInsert = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7, parenttask = $8, spenttime = $9, targetversion = $10,  files = $11, updateddate = $12 WHERE issueid = $13`
+                let sqlInsert = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7, parenttask = $8, spenttime = $9, targetversion = $10,  files = $11, updateddate = $12${closeddate ? `, closeddate = NOW() ` : " "}WHERE issueid = $13`
                 db.query(sqlInsert, [form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.dueDate, parseInt(form.done), form.parentTask, parseInt(form.spentTime), form.targetVersion, form.file, 'NOW()', issueid], (err) => {
                     resolve();
                     reject(err);
                 })
             } else {
-                let sqlInsert = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7, parenttask = $8, spenttime = $9, targetversion = $10, updateddate = $11 WHERE issueid = $12`
+                let sqlInsert = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7, parenttask = $8, spenttime = $9, targetversion = $10, updateddate = $11${closeddate ? `, closeddate = NOW() ` : " "}WHERE issueid = $12`
                 db.query(sqlInsert, [form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.dueDate, parseInt(form.done), form.parentTask, parseInt(form.spentTime), form.targetVersion, 'NOW()', issueid], (err) => {
                     resolve();
                     reject(err);
@@ -788,17 +793,22 @@ module.exports = (db) => {
         const issueid = parseInt(req.params.issueid);
         const projectid = parseInt(req.params.projectid);
         let form = req.body;
-        
+
         if (req.files) {
             let file = req.files.file;
             form.file = file.name.toLowerCase().replace("", Date.now()).split(" ").join("-");
+            console.log(form);
             updateIssue(issueid, form)
                 .then(() => {
-                    req.flash('issuesMessage', 'Issue updated');
-                    res.redirect(`/projects/issues/${projectid}`)
+                    file.mv(path.join(__dirname, "..", "public", "upload", form.file), function (err) {
+                        if (err) return res.status(500).send(err);
+                        req.flash('issuesMessage', 'Issue updated');
+                        res.redirect(`/projects/issues/${projectid}`)
+                    })
                 })
                 .catch(err => console.log(err));
         } else {
+            console.log(form);
             updateIssue(issueid, form)
                 .then(() => {
                     req.flash('issuesMessage', 'Issue updated');
@@ -816,7 +826,7 @@ module.exports = (db) => {
 
     // Testing function related to Query-DB
     router.get('/test/:projectid/:issueid', (req, res) => {
-        const projectid = parseInt(req.params.projectid);        
+        const projectid = parseInt(req.params.projectid);
         const issueid = parseInt(req.params.issueid);
 
         showIssueById(projectid, issueid).then((data) => {

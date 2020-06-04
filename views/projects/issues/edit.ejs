@@ -293,22 +293,6 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-sm-3 offset-sm-2">
-                                <img src="<%= issue.files %>" id="profile-img-tag" width="80px" class="mb-2" />
-                            </div>
-                        </div>
-
-                        <% if(issue.files){ %>
-                        <div class="row mb-4">
-                            <div class="col-sm-3 offset-sm-2">
-                                <a class="btn btn-outline-primary" href="/upload/<%= issue.files %>"
-                                    role="button">Download /
-                                    Preview <%= issue.files %></a>
-                            </div>
-                        </div>
-                        <% } %>
-
                         <div class="form-group row">
                             <div class="col-sm-10">
                                 <button type="submit" class="btn btn-primary">Update Issue</button>

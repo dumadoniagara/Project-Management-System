@@ -139,8 +139,8 @@
                                     </div>
 
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="checkDescription" value="true"
-                                            id="check-description"
+                                        <input class="form-check-input" type="checkbox" name="checkDescription"
+                                            value="true" id="check-description"
                                             <%= checkOptionIssue.description != undefined ? 'checked' : '' %>>
                                         <label class="form-check-label" for="check-description">
                                             Description
@@ -273,9 +273,8 @@
                                     </div>
 
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="checkFile"
-                                            value="true" id="check-file"
-                                            <%= checkOptionIssue.file != undefined ? 'checked' : '' %>>
+                                        <input class="form-check-input" type="checkbox" name="checkFile" value="true"
+                                            id="check-file" <%= checkOptionIssue.file != undefined ? 'checked' : '' %>>
                                         <label class="form-check-label" for="check-file">
                                             File
                                         </label>
@@ -338,7 +337,13 @@
                                     </td>
                                     <td <%= checkOptionIssue.description ? '' : 'hidden' %>><%= item.description %></td>
                                     <td <%= checkOptionIssue.status ? '' : 'hidden' %>><%= item.status %></td>
-                                    <td <%= checkOptionIssue.priority ? '' : 'hidden' %>><%= item.priority %></td>
+                                    <td <%= checkOptionIssue.priority ? '' : 'hidden' %>>
+                                        <% if(item.priority == 'urgent'){ %>
+                                        <h5><span class="badge badge-danger"><%= item.priority %></span></h5>
+                                        <% } else { %>
+                                        <%= item.priority %>
+                                        <% } %>
+                                    </td>
                                     <td <%= checkOptionIssue.assignee ? '' : 'hidden' %>>
                                         <% assignee.forEach(element => { %>
                                         <%= element.userid == item.assignee ? element.fullname : '' %>
@@ -354,13 +359,18 @@
                                     </td>
                                     <td <%= checkOptionIssue.spentTime ? '' : 'hidden' %>><%= item.spenttime %></td>
                                     <td <%= checkOptionIssue.done ? '' : 'hidden' %>><%= item.done %>%</td>
-                                    <td <%= checkOptionIssue.targetVersion ? '' : 'hidden' %>><%= item.targetversion %></td>
+                                    <td <%= checkOptionIssue.targetVersion ? '' : 'hidden' %>><%= item.targetversion %>
+                                    </td>
                                     <td <%= checkOptionIssue.author ? '' : 'hidden' %>><%= item.authorname %></td>
-                                    <td <%= checkOptionIssue.createdDate ? '' : 'hidden' %>><%= moment(item.createddate).format("MMMM Do, YYYY") %></td>
-                                   
-                                    <td <%= checkOptionIssue.closedDate? '' : 'hidden' %>><%= moment(item.closeddate).format("MMMM Do, YYYY") %></td>
+                                    <td <%= checkOptionIssue.createdDate ? '' : 'hidden' %>>
+                                        <%= moment(item.createddate).format("MMMM Do, YYYY") %></td>
 
-                                    <td <%= checkOptionIssue.updatedDate ? '' : 'hidden' %>><%= moment(item.updateddate).format("MMMM Do, YYYY") %></td>
+                                    <td <%= checkOptionIssue.updatedDate? '' : 'hidden' %>>
+                                        <%= moment(item.updateddate).format("MMMM Do, YYYY") %></td>
+
+                                    <td <%= checkOptionIssue.closedDate ? '' : 'hidden' %>>
+                                        <%=  item.closeddate ? moment(item.closeddate).format("MMMM Do, YYYY") : " " %>
+                                    </td>
 
                                     <td <%= checkOptionIssue.file ? '' : 'hidden' %>><a
                                             href="/upload/<%= item.files ? item.files : '#'%>"><%= item.files ? 'File' : 'No file attached' %></a>
