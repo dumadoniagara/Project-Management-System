@@ -25,10 +25,15 @@ let checkOptionIssue = {
     assignee: true,
     startDate: true,
     dueDate: true,
-    description: true,
     estimateTime: true,
+    spentTime: true,
     done: true,
-    author: true
+    targetVersion: true,
+    author: true,
+    createdDate: true,
+    updatedDate: true,
+    closedDate: true,
+    file: true,
 }
 
 const isLoggedIn = (req, res, next) => {
@@ -265,10 +270,20 @@ module.exports = (db) => {
         })
     }
 
+    function showParentIssues(projectid) {
+        return new Promise((resolve, reject) => {
+            db.query(`SELECT subject, tracker FROM issues WHERE projectid = $1 ORDER BY issueid ASC`, [projectid], (err, data) => {
+                let result = data.rows;
+                resolve(result);
+                reject(err);
+            })
+        })
+    }
+
     function showIssueById(projectid, issueid) {
         return new Promise((resolve, reject) => {
             db.query(`SELECT issues.*, CONCAT(users.firstname,' ',users.lastname) as authorname FROM issues LEFT JOIN users ON issues.author = users.userid WHERE issues.projectid = $1 AND issues.issueid = $2 `, [projectid, issueid], (err, data) => {
-                let result = data.rows;
+                let result = data.rows[0];
                 resolve(result);
                 reject(err);
             })
@@ -286,6 +301,24 @@ module.exports = (db) => {
             } else {
                 let sqlInsert = `INSERT INTO issues (projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, author, createddate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`
                 db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, form.assignee, form.startDate, form.dueDate, form.estimatedTime, form.done, authorid], (err) => {
+                    resolve();
+                    reject(err);
+                })
+            }
+        })
+    }
+
+    function updateIssue(issueid, form) {
+        return new Promise((resolve, reject) => {
+            if (form.file) {
+                let sqlInsert = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7, parenttask = $8, spenttime = $9, targetversion = $10,  files = $11, updateddate = $12 WHERE issueid = $13`
+                db.query(sqlInsert, [form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.dueDate, parseInt(form.done), form.parentTask, parseInt(form.spentTime), form.targetVersion, form.file, 'NOW()', issueid], (err) => {
+                    resolve();
+                    reject(err);
+                })
+            } else {
+                let sqlInsert = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7, parenttask = $8, spenttime = $9, targetversion = $10, updateddate = $11 WHERE issueid = $12`
+                db.query(sqlInsert, [form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.dueDate, parseInt(form.done), form.parentTask, parseInt(form.spentTime), form.targetVersion, 'NOW()', issueid], (err) => {
                     resolve();
                     reject(err);
                 })
@@ -619,6 +652,51 @@ module.exports = (db) => {
             })
     })
 
+    // Option column 
+    router.post('/issues/:projectid', isLoggedIn, (req, res) => {
+        const projectid = parseInt(req.params.projectid);
+        let { checkId,
+            checkSubject,
+            checkTracker,
+            checkDescription,
+            checkStatus,
+            checkPriority,
+            checkAssignee,
+            checkStartDate,
+            checkDueDate,
+            checkEstimateTime,
+            checkSpentTime,
+            checkDone,
+            checkTargetVersion,
+            checkAuthor,
+            checkCreatedDate,
+            checkUpdatedDate,
+            checkClosedDate,
+            checkFile
+        } = req.body;
+
+        checkOptionIssue.id = checkId;
+        checkOptionIssue.subject = checkSubject;
+        checkOptionIssue.tracker = checkTracker;
+        checkOptionIssue.description = checkDescription;
+        checkOptionIssue.status = checkStatus;
+        checkOptionIssue.priority = checkPriority;
+        checkOptionIssue.assignee = checkAssignee;
+        checkOptionIssue.startDate = checkStartDate;
+        checkOptionIssue.dueDate = checkDueDate;
+        checkOptionIssue.estimateTime = checkEstimateTime;
+        checkOptionIssue.spentTime = checkSpentTime;
+        checkOptionIssue.done = checkDone;
+        checkOptionIssue.author = checkAuthor;
+        checkOptionIssue.targetVersion = checkTargetVersion;
+        checkOptionIssue.createdDate = checkCreatedDate;
+        checkOptionIssue.updatedDate = checkUpdatedDate;
+        checkOptionIssue.closedDate = checkClosedDate;
+        checkOptionIssue.file = checkFile;
+        res.redirect(`/projects/issues/${projectid}`);
+    })
+
+    // render add-issue
     router.get('/issues/:projectid/add', isLoggedIn, (req, res) => {
         const projectid = parseInt(req.params.projectid);
         const search = "";
@@ -679,50 +757,74 @@ module.exports = (db) => {
             })
     })
 
-    router.get('/issues/:projectid/edit/:issueid', isLoggedIn, (req, res) => {
+    // render edit-issue
+    router.get('/issues/:projectid/edit/:issueid', (req, res) => {
         const projectid = parseInt(req.params.projectid);
         const issueid = parseInt(req.params.issueid);
         const search = "";
-        Promise.all([usersModelbyProjectId(projectid, search), showProject(projectid), showIssueById(projectid, issueid)])
+        Promise.all([usersModelbyProjectId(projectid, search), showProject(projectid), showIssueById(projectid, issueid), showParentIssues(projectid)])
             .then((data) => {
-                let [users, project, issue] = data;
-                res.render('projects/issues/edit', {
-                    // res.json({
-                    users,
-                    project,
-                    issue: issue[0],
-                    moment
-                })
+                let [users, project, issue, parentIssues] = data;
+                showUser(issue.assignee, projectid)
+                    .then((assignee) => {
+                        res.render('projects/issues/edit', {
+                            // res.json({
+                            users,
+                            project,
+                            moment,
+                            parentIssues,
+                            issue,
+                            assignee
+                        })
+                    })
             })
             .catch(err => {
                 console.log(err);
             })
     })
 
-    router.post('/issues/:projectid/edit/:issueid', isLoggedIn, (req, res) => {
+    // post edit-issue
+    router.post('/issues/:projectid/edit/:issueid', (req, res) => {
         const issueid = parseInt(req.params.issueid);
         const projectid = parseInt(req.params.projectid);
-        form = req.body;
-        fileName = req.files.file;
-        res.json({
-            form,
-            fileName
-        })
+        let form = req.body;
+        
+        if (req.files) {
+            let file = req.files.file;
+            form.file = file.name.toLowerCase().replace("", Date.now()).split(" ").join("-");
+            updateIssue(issueid, form)
+                .then(() => {
+                    req.flash('issuesMessage', 'Issue updated');
+                    res.redirect(`/projects/issues/${projectid}`)
+                })
+                .catch(err => console.log(err));
+        } else {
+            updateIssue(issueid, form)
+                .then(() => {
+                    req.flash('issuesMessage', 'Issue updated');
+                    res.redirect(`/projects/issues/${projectid}`)
+                })
+                .catch(err => console.log(err));
+        }
     })
 
 
-    // router.get('/test/:projectid', (req, res) => {
-    //     const projectid = req.params.projectid;
-    //     showProject(projectid)
-    //         .then((data) => {
-    //             res.json({
-    //                 data
-    //             })
-    //         })
-    //         .catch((err) => {
-    //             console.log(err);
-    //         })
-    // })
+
+
+
+
+
+    // Testing function related to Query-DB
+    router.get('/test/:projectid/:issueid', (req, res) => {
+        const projectid = parseInt(req.params.projectid);        
+        const issueid = parseInt(req.params.issueid);
+
+        showIssueById(projectid, issueid).then((data) => {
+            res.json({
+                data
+            })
+        })
+    })
 
     return router;
 }
