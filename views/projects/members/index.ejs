@@ -148,10 +148,10 @@
                                     <td <%= checkOptionMember.name ? '' : 'hidden' %>><%= item.fullname %></td>
                                     <td <%= checkOptionMember.position ? '' : 'hidden' %>><%= item.role ? (item.role == 'programmer' ? 'software developer' : item.role ) : 'Not Assigned'%></td>
                                     <td>
-                                        <a href="<%= `/projects/members/${project[0].projectid}/edit/${item.userid}` %>">
+                                        <a href="<%= `/projects/members/${project.projectid}/edit/${item.userid}` %>">
                                             <button type="button" class="btn btn-success">Edit</button>
                                         </a>
-                                        <a href="<%= `/projects/members/${project[0].projectid}/delete/${item.userid}` %>">
+                                        <a href="<%= `/projects/members/${project.projectid}/delete/${item.userid}` %>">
                                             <button type="button" class="btn btn-danger">Delete</button>
                                         </a>
                                     </td>
@@ -160,7 +160,7 @@
                             </tbody>
                         </table>
 
-                        <a href="/projects/members/<%= project[0].projectid %>/add">
+                        <a href="/projects/members/<%= project.projectid %>/add">
                             <button type="button" class="btn btn-primary">Add</button>
                         </a> <br> <br>
 

@@ -187,7 +187,7 @@ module.exports = (db) => {
     function showProject(projectid) {
         return new Promise((resolve, reject) => {
             db.query(`SELECT name, projectid FROM projects WHERE projectid = $1`, [projectid], (err, data) => {
-                let result = data.rows;
+                let result = data.rows[0];
                 resolve(result);
                 reject(err);
             })
@@ -311,7 +311,7 @@ module.exports = (db) => {
     function updateIssue(issueid, form) {
         return new Promise((resolve, reject) => {
             let closeddate = false;
-            if(form.status == 'closed'){
+            if (form.status == 'closed') {
                 closeddate = true;
             }
 
@@ -344,6 +344,16 @@ module.exports = (db) => {
     function showAssignee(projectid) {
         return new Promise((resolve, reject) => {
             db.query(`SELECT users.userid, CONCAT(firstname,' ', lastname) AS fullname FROM members LEFT JOIN users ON members.userid = users.userid WHERE members.projectid = $1`, [projectid], (err, data) => {
+                let result = data.rows;
+                resolve(result);
+                reject(err);
+            })
+        })
+    }
+
+    function showActivity(projectid) {
+        return new Promise((resolve, reject) => {
+            db.query(`SELECT activity.activityid, activity.title, activity.description, CONCAT(users.firstname,' ',users.lastname) AS authorname, (time AT TIME ZONE 'Asia/Jakarta'):: time AS timeactivity, (time AT TIME ZONE 'Asia/Jakarta'):: date AS dateactivity FROM activity LEFT JOIN users ON activity.author = users.userid WHERE projectid = $1 ORDER BY timeactivity DESC`, [projectid], (err, data) => {
                 let result = data.rows;
                 resolve(result);
                 reject(err);
@@ -459,17 +469,16 @@ module.exports = (db) => {
         const id = parseInt(req.params.id);
         Promise.all([usersModel(), showMembers(id), showProject(id)])
             .then((data) => {
-                let [memberList, memberProject, projectName] = data;
+                let [memberList, memberProject, project] = data;
                 let membersId = [];
                 memberProject.forEach(item => {
                     membersId.push(item.userid);
                 })
 
                 res.render('projects/edit', {
-                    // res.status(200).json({
                     memberList,
                     membersId,
-                    projectName
+                    project
                 })
             })
             .catch(err => {
@@ -818,6 +827,23 @@ module.exports = (db) => {
         }
     })
 
+    router.get('/activity/:projectid', (req, res) => {
+        const projectid = parseInt(req.params.projectid);
+        Promise.all([showProject(projectid), showActivity(projectid)])
+            .then((data) => {
+                let [project, activity] = data;
+                res.render('projects/activity/index', {
+                // res.json({
+                    project,
+                    moment,
+                    activity
+                })
+            })
+
+    })
+
+
+
 
 
 
@@ -825,13 +851,12 @@ module.exports = (db) => {
 
 
     // Testing function related to Query-DB
-    router.get('/test/:projectid/:issueid', (req, res) => {
+    router.get('/testactivity/:projectid', (req, res) => {
         const projectid = parseInt(req.params.projectid);
-        const issueid = parseInt(req.params.issueid);
 
-        showIssueById(projectid, issueid).then((data) => {
+        showActivity(projectid).then((activity) => {
             res.json({
-                data
+                activity
             })
         })
     })

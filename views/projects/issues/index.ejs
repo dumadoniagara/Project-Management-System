@@ -380,12 +380,12 @@
 
                                     <td>
                                         <a role="button" class="btn btn-success mr-2 mb-2"
-                                            href="<%= `/projects/issues/${project[0].projectid}/edit/${item.issueid}` %>">
+                                            href="<%= `/projects/issues/${project.projectid}/edit/${item.issueid}` %>">
                                             <i class="fas fa-edit"></i>
                                         </a>
 
                                         <a role="button" class="btn btn-danger mr-2 mb-2"
-                                            href="<%= `/projects/issues/${project[0].projectid}/delete/${item.issueid}` %>">
+                                            href="<%= `/projects/issues/${project.projectid}/delete/${item.issueid}` %>">
                                             <i class="fas fa-trash-alt"></i>
                                         </a>
                                     </td>
@@ -394,7 +394,7 @@
                             </tbody>
                         </table>
 
-                        <a href="/projects/issues/<%= project[0].projectid %>/add">
+                        <a href="/projects/issues/<%= project.projectid %>/add">
                             <button type="button" class="btn btn-primary">Add</button>
                         </a> <br> <br>
 
