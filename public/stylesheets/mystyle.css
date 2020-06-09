@@ -1,0 +1,43 @@
+/* Navbar */
+.navbar-brand {
+    font-family: Viga;
+    font-size: 23px;
+    margin-right: 20px;
+}
+
+nav {
+    font-family: Viga;
+}
+
+/* jumbotron */
+
+.jumbotron {
+    background-image: url(images/img.jpg);
+    background-size: cover;
+    height: 600px;
+    text-align: center;
+  }
+  
+/* utility */
+.tombol {
+    text-transform: uppercase;
+    border-radius: 50px;
+}
+
+/* before-after CSS */
+.nav-link:hover::after{
+    content : '';
+    display: block;
+    border-bottom: 3px solid #0B63DC;
+    width: 20px;
+    margin: auto;
+    padding-bottom: 5px;
+    margin-bottom: -8px;
+}
+
+
+body {
+    margin-top: 70px;
+    margin-bottom: 80px;
+    font-family: Viga;
+ }

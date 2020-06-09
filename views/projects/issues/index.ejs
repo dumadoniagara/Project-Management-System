@@ -394,9 +394,34 @@
                             </tbody>
                         </table>
 
-                        <a href="/projects/issues/<%= project.projectid %>/add">
-                            <button type="button" class="btn btn-primary">Add</button>
-                        </a> <br> <br>
+                        <div class="row">
+                            <div class="col-1">
+                                <a href="/projects/issues/<%= project.projectid %>/add">
+                                    <button type="button" class="btn btn-primary">Add</button>
+                                </a>
+                            </div>
+                
+                            <div class="col-10">
+                                <div class="pagination justify-content-center">
+                                    <nav aria-label="Page navigation">
+                                        <ul class="pagination">
+                                            <li class="page-item <%= page==1 ? 'disabled' : '' %>"><a class="page-link"
+                                                    href="/projects/issues/<%= project.projectid %><%= url.replace(`?page=${parseInt(page)}`, `?page=${ parseInt(page) - 1}`) %>">Previous</a>
+                                            </li>
+                                            <%for (let i=1; i <= pages; i++ ){%>
+                                            <li class="page-item <%= (i == page) ? 'active' : '' %> "><a class="page-link"
+                                                    href="/projects/issues/<%= project.projectid %><%= url.replace(`?page=${parseInt(page)}`,`?page=${i}`) %>"><%= i %></a>
+                                            </li>
+                                            <%}%>
+                                                    <li class="page-item <%= page==pages ? 'disabled' : '' %>"> <a
+                                                class="page-link disabled"
+                                                href="/projects/issues/<%= project.projectid %><%= url.replace(`?page=${parseInt(page)}`,`?page=${parseInt(page) + 1}`) %>">Next</a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
                 </div>

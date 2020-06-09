@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users</title>
+    <% include ../partials/css-bootstrap %>
+
+</head>
+
+<body>
+
+    <header>
+        <%- include ../partials/navbar %>
+    </header>
+    <div class="container">
+        <h1>Users</h1>
+        <hr>
+        <div class="container">
+            <h2 style="text-align: left">Filters</h2>
+            <form action="" method="GET">
+                <input type="hidden" name="page" value="1">
+                <div class="container mt-4">
+                    <!-- ID -->
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-check">
+                                <input class="form-check-input" name="checkId" type="checkbox" id="check-id">
+                                <label class="form-check-label" for="check-id">
+                                    ID
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-10">
+                            <div class="form-group">
+                                <input type="number" name="id" class="form-control" id="id" placeholder="ID">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Name -->
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-check">
+                                <input class="form-check-input" name="checkName" type="checkbox" id="check-name">
+                                <label class="form-check-label" for="check-name">
+                                    Name
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-10">
+                            <div class="form-group">
+                                <input type="text" name="name" class="form-control" id="name" placeholder="Name">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Email -->
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="checkEmail" id="check-email">
+                                <label class="form-check-label" for="check-email">
+                                    Email
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-10">
+                            <div class="form-group">
+                                <input type="email" name="email" class="form-control" id="email"
+                                    placeholder="e-mail user">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="checkPosition"
+                                    id="check-position">
+                                <label class="form-check-label" for="check-position">
+                                    Position
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-10">
+                            <div class="form-group">
+                                <select name="position" id="position" class="form-control">
+                                    <option selected disabled> Choose position</option>
+                                    <option class="form-control" value="manager">Manager</option>
+                                    <option class="form-control" value="programmer">Software Developer</option>
+                                    <option class="form-control" value="quality assurance">Quality Assurance
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="checkType" id="check-type">
+                                <label class="form-check-label" for="check-type">
+                                    Type Job
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-10">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="type" id="fulltime" value="fulltime">
+                                <label class="form-check-label" for="fulltime">
+                                    Fulltime
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="type" id="parttime" value="parttime">
+                                <label class="form-check-label" for="parttime">
+                                    Part-time
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 10px;">
+                        <button type="submit" class="btn btn-dark" id="search-btn">Search</button>
+                        <a href="/"><button class="btn btn-dark" id="search-btn">Reset</button></a>
+                    </div>
+            </form>
+        </div>
+
+        <div class="optionsView mt-4 mb-4">
+            <form action="" method="POST">
+                <h2>Options</h2>
+                <div class="form-group row">
+
+                    <div class="col-2 ml-3">Columns</div>
+
+                    <div class="col-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="checkId" value="true" id="check-id"
+                                <%= checkOption.id ? 'checked' : '' %>>
+                            <label class="form-check-label" for="check-id">
+                                ID
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="checkName" value="true"
+                                id="check-name" <%= checkOption.name ? 'checked' : '' %>>
+                            <label class="form-check-label" for="check-name">
+                                Name
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="checkPosition" value="true"
+                                id="check-members" <%= checkOption.position ? 'checked' : '' %>>
+                            <label class="form-check-label" for="defaultCheck2">
+                                Position
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="checkEmail" value="true"
+                                id="check-email" <%= checkOption.email ? 'checked' : '' %>>
+                            <label class="form-check-label" for="defaultCheck2">
+                                Email
+                            </label>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="checkType" value="true"
+                                id="check-Type" <%= checkOption.type ? 'checked' : '' %>>
+                            <label class="form-check-label" for="defaultCheck2">
+                                Type
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-2">
+                    <button type="submit" class="btn btn-dark">Apply</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-content mt-5">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col" <%= checkOption.id ? '' : 'hidden' %>>User ID</th>
+                        <th scope="col" <%= checkOption.email ? '' : 'hidden' %>>Email</th>
+                        <th scope="col" <%= checkOption.name ? '' : 'hidden' %>>Name</th>
+                        <th scope="col" <%= checkOption.position ? '' : 'hidden' %>>Position</th>
+                        <th scope="col" <%= checkOption.type ? '' : 'hidden' %>>Type Job</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% users.forEach (item => { %>
+                    <tr>
+                        <th scope="row" <%= checkOption.id ? '' : 'hidden' %>><%= item.userid %></th>
+                        <td <%= checkOption.email  ? '' : 'hidden' %>><%= item.email %></td>
+                        <td <%= checkOption.name ? '' : 'hidden' %>><%= item.fullname %></td>
+                        <td <%= checkOption.position ? '' : 'hidden' %>>
+                            <%= item.position == 'programmer' ? 'SOFTWARE DEVELOPER' : item.position.toUpperCase() %>
+                        </td>
+                        <td <%= checkOption.type ? '' : 'hidden' %>><%= item.type %></td>
+                        <td>
+                            <a href="/users/edit/<%= item.userid %>">
+                                <button type="button" class="btn btn-success">Edit</button>
+                            </a>
+
+                            <a href="/users/delete/<%= item.userid %>">
+                                <button type="button" class="btn btn-danger">Delete</button>
+                            </a>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row">
+            <div class="col-1">
+                <a href="/users/add">
+                    <button type="button" class="btn btn-primary">Add</button>
+                </a>
+            </div>
+
+            <div class="col-10">
+                <div class="pagination justify-content-center">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            <li class="page-item <%= page==1 ? 'disabled' : '' %>"><a class="page-link"
+                                    href="/users<%= url.replace(`?page=${parseInt(page)}`,`?page=${ parseInt(page) - 1}`) %>">Previous</a>
+                            </li>
+                            <%for (let i=1; i <= pages; i++ ){%>
+                            <li class="page-item <%= (i == page) ? 'active' : '' %> "><a class="page-link"
+                                    href="/users<%= url.replace(`?page=${parseInt(page)}`,`?page=${i}`) %>"><%= i %></a>
+                            </li>
+                            <%}%>
+                                    <li class="page-item <%= page==pages ? 'disabled' : '' %>"> <a
+                                class="page-link disabled"
+                                href="/users<%= url.replace(`?page=${parseInt(page)}`,`?page=${parseInt(page) + 1}`) %>">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <% include ../partials/footer %>
+</body>
+
+</html>

@@ -2,187 +2,197 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-    <% include ../partials/css-bootstrap %>
-    <style>
-        body {
-            margin-top: 60px;
-            margin-bottom : 80px;
-        }
-    </style>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Home</title>
+   <% include ../partials/css-bootstrap %>
+
 </head>
 
 <body>
 
-    <header>
-        <%- include ../partials/navbar %>
-    </header>
-
-    <div class="container">
-        <h1>Projects Dashboard</h1>
-        <hr>
-        <h2 style="text-align: left">Filters</h2>
-        <div class="formFilter">
+   <header>
+      <%- include ../partials/navbar %>
+   </header>
+   <div class="container">
+      <h1>Projects Dashboard</h1>
+      <hr>
+      <div class="container">
+         <h2 style="text-align: left">Filters</h2>
+         <div class="formFilter">
             <form action="" method="GET" id="searchForm">
-                <div class="container mt-4">
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-check">
-                                <input class="form-check-input" name="checkId" type="checkbox" id="check-id">
-                                <label class="form-check-label" for="check-id">
-                                    ID
-                                </label>
-                            </div>
+               <input type="hidden" name="page" value="1">
+               <div class="container mt-4">
+                  <div class="row">
+                     <div class="col">
+                        <div class="form-check">
+                           <input class="form-check-input" name="checkId" type="checkbox" id="check-id">
+                           <label class="form-check-label" for="check-id">
+                              ID
+                           </label>
                         </div>
-                        <div class="col-10">
-                            <div class="form-group">
-                                <input type="number" name="id" class="form-control" id="id" placeholder="ID">
-                            </div>
+                     </div>
+                     <div class="col-10">
+                        <div class="form-group">
+                           <input type="number" name="id" class="form-control" id="id" placeholder="ID">
                         </div>
-                    </div>
+                     </div>
+                  </div>
 
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-check">
-                                <input class="form-check-input" name="checkName" type="checkbox" id="check-name">
-                                <label class="form-check-label" for="check-name">
-                                    Name
-                                </label>
-                            </div>
+                  <div class="row">
+                     <div class="col">
+                        <div class="form-check">
+                           <input class="form-check-input" name="checkName" type="checkbox" id="check-name">
+                           <label class="form-check-label" for="check-name">
+                              Name
+                           </label>
                         </div>
-                        <div class="col-10">
-                            <div class="form-group">
-                                <input type="text" name="name" class="form-control" id="name" placeholder="Name">
-                            </div>
+                     </div>
+                     <div class="col-10">
+                        <div class="form-group">
+                           <input type="text" name="name" class="form-control" id="name" placeholder="Name">
                         </div>
-                    </div>
+                     </div>
+                  </div>
 
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="checkMember" id="check-member">
-                                <label class="form-check-label" for="check-member">
-                                    Member
-                                </label>
-                            </div>
+                  <div class="row">
+                     <div class="col">
+                        <div class="form-check">
+                           <input class="form-check-input" type="checkbox" name="checkMember" id="check-member">
+                           <label class="form-check-label" for="check-member">
+                              Member
+                           </label>
                         </div>
-                        <div class="col-10">
-                            <div class="form-group">
-                                <select name="memberId" id="member" class="form-control">
-                                    <option selected disabled> Choose the member ...</option>
-                                    <% memberList.forEach(item => { %>
-                                    <option class="form-control" value="<%= item.userid %>"><%= item.fullname %>
-                                    </option>
-                                    <% }) %>
-                                </select>
-                            </div>
+                     </div>
+                     <div class="col-10">
+                        <div class="form-group">
+                           <select name="memberId" id="member" class="form-control">
+                              <option selected disabled> Choose the member ...</option>
+                              <% memberList.forEach(item => { %>
+                              <option class="form-control" value="<%= item.userid %>"><%= item.fullname %>
+                              </option>
+                              <% }) %>
+                           </select>
                         </div>
-                    </div>
+                     </div>
+                  </div>
 
-                    <button type="submit" class="btn btn-dark" id="search-btn">Search</button>
-                    <a href="/projects"><button class="btn btn-dark" id="search-btn">All</button></a>
-                </div>
+                  <button type="submit" class="btn btn-dark" id="search-btn">Search</button>
+                  <a href="/"><button class="btn btn-dark" id="search-btn">Reset</button></a>
+               </div>
             </form>
-        </div>
+         </div>
 
-        <div class="optionsView mt-4">
+
+         <div class="optionsView mt-4">
             <form action="/projects/option" method="POST">
-                <h2>Options</h2>
-                <div class="form-group row">
-                    <div class="col-sm-2 ml-3">Columns</div>
-                    <div class="col">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="checkId" value="true" id="check-id"
-                                <%= checkOption.id != undefined ? 'checked' : '' %>>
-                            <label class="form-check-label" for="check-id">
-                                ID
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="checkName" value="true"
-                                id="check-name" <%= checkOption.name != undefined ? 'checked' : '' %>>
-                            <label class="form-check-label" for="check-name">
-                                Name
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="checkMembers" value="true"
-                                id="check-members" <%= checkOption.members != undefined ? 'checked' : '' %>>
-                            <label class="form-check-label" for="defaultCheck2">
-                                Members
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-2">
-                    <button type="submit" class="btn btn-dark" id="search-btn">Apply</button>
-                </div>
+               <h2>Options</h2>
+               <div class="form-group row">
+                  <div class="col-sm-2 ml-3">Columns</div>
+                  <div class="col">
+                     <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="checkId" value="true" id="check-id"
+                           <%= checkOption.id != undefined ? 'checked' : '' %>>
+                        <label class="form-check-label" for="check-id">
+                           ID
+                        </label>
+                     </div>
+                     <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="checkName" value="true" id="check-name"
+                           <%= checkOption.name != undefined ? 'checked' : '' %>>
+                        <label class="form-check-label" for="check-name">
+                           Name
+                        </label>
+                     </div>
+                     <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="checkMembers" value="true"
+                           id="check-members" <%= checkOption.members != undefined ? 'checked' : '' %>>
+                        <label class="form-check-label" for="defaultCheck2">
+                           Members
+                        </label>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-sm-2">
+                  <button type="submit" class="btn btn-dark" id="search-btn">Apply</button>
+               </div>
             </form>
-        </div>
+         </div>
+      </div>
 
-        <div class="table-content mt-5">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th scope="col" <%= checkOption.id != undefined ? '' : 'hidden' %>>#</th>
-                        <th scope="col" <%= checkOption.name != undefined ? '' : 'hidden' %>>Name</th>
-                        <th scope="col" <%= checkOption.members != undefined ? '' : 'hidden' %>>Members</th>
-                        <th scope="col">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% data.forEach (item => { %>
-                    <tr>
-                        <th scope="row" <%= checkOption.id != undefined ? '' : 'hidden' %>> <a
-                                href="projects/overview/<%= item.projectid %>"><%= item.projectid %></a></th>
-                        <td <%= checkOption.name != undefined ? '' : 'hidden' %>><%= item.name %></td>
-                        <td <%= checkOption.members!= undefined ? '' : 'hidden' %>>
-                            <% if(item.members){ %>
-                            <%= item.members.join(", ") %>
-                        </td>
-                        <% } else { %>
-                        <span class="badge badge-danger">belum ada member terdaftar</span>
-                        </td>
-                        <% } %>
-                        <td>
-                            <a href="projects/edit/<%= item.projectid %>">
-                                <button type="button" class="btn btn-success">Edit</button>
-                            </a>
-                            <a href="projects/delete/<%= item.projectid %>">
-                                <button type="button" class="btn btn-danger">Delete</button>
-                            </a>
-                        </td>
-                    </tr>
-                    <% }) %>
-                </tbody>
-            </table>
+      <div class="table-content mt-5">
+         <table class="table table-striped">
+            <thead>
+               <tr>
+                  <th scope="col" <%= checkOption.id != undefined ? '' : 'hidden' %>>#</th>
+                  <th scope="col" <%= checkOption.name != undefined ? '' : 'hidden' %>>Name</th>
+                  <th scope="col" <%= checkOption.members != undefined ? '' : 'hidden' %>>Members</th>
+                  <th scope="col" style="text-align: center;">Action</th>
+               </tr>
+            </thead>
+            <tbody>
+               <% data.forEach (item => { %>
+               <tr>
+                  <th scope="row" <%= checkOption.id != undefined ? '' : 'hidden' %>> <a
+                        href="/projects/overview/<%= item.projectid %>"><%= item.projectid %></a></th>
+                  <td <%= checkOption.name != undefined ? '' : 'hidden' %>><%= item.name %></td>
+                  <td <%= checkOption.members!= undefined ? '' : 'hidden' %>>
+                     <% if(item.members){ %>
+                     <%= item.members.join(", ") %>
+                  </td>
+                  <% } else { %>
+                  <span class="badge badge-danger">belum ada member terdaftar</span>
+                  </td>
+                  <% } %>
+                  <td>
+                     <a href="/projects/edit/<%= item.projectid %>">
+                        <button type="button" class="btn btn-success">Edit</button>
+                     </a>
 
-            <a href="/projects/add">
-                <button type="button" class="btn btn-primary">Add</button>
-            </a> <br> <br>
+                     <a href="/projects/delete/<%= item.projectid %>">
+                        <button type="button" class="btn btn-danger">Delete</button>
+                     </a>
+                  </td>
+               </tr>
+               <% }) %>
+            </tbody>
+         </table>
 
-            <div class="pagination ">
-                <nav aria-label="Page navigation example">
-                    <ul class="pagination">
+         <div class="row">
+            <div class="col-1">
+               <a href="/projects/add">
+                  <button type="button" class="btn btn-primary">Add</button>
+               </a>
+            </div>
+            <div class="col-10">
+               <div class="pagination justify-content-center">
+                  <nav aria-label="Page navigation">
+                     <ul class="pagination">
                         <li class="page-item <%= page==1 ? 'disabled' : '' %>"><a class="page-link"
-                                href="<%= url.replace(`page=${page}`, `page=${parseInt(page)-1}`)%>">Previous</a></li>
+                              href="/projects<%= url.replace(`?page=${parseInt(page)}`, `?page=${ parseInt(page) - 1}`) %>">Previous</a>
+                        </li>
                         <%for (let i=1; i <= pages; i++ ){%>
-                        <li class="page-item <%= (i == page) ? 'active' : '' %> "> <a class="page-link"
-                                href="<%= url.replace(`page=${page}`, `page=${i}`)%>"><%= i%></a></li>
+                        <li class="page-item <%= (i == page) ? 'active' : '' %> "><a class="page-link"
+                              href="/projects<%= url.replace(`?page=${parseInt(page)}`,`?page=${i}`) %>"><%= i %></a>
+                        </li>
                         <%}%>
                         <li class="page-item <%= page==pages ? 'disabled' : '' %>"> <a class="page-link disabled"
-                            href="<%= url.replace(`page=${page}`, `page=${parseInt(page)+1}`)%>">Next</a></li>
-                    </ul>
-                </nav>
+                           href="/projects<%= url.replace(`?page=${parseInt(page)}`,`?page=${parseInt(page) + 1}`) %>">Next</a>
+                        </li>
+                     </ul>
+                  </nav>
+               </div>
             </div>
-        </div>
-    </div>
+         </div>
 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <<% include ../partials/footer %>
+        
+      </div>
+   </div>
+
+
+   <!-- Optional JavaScript -->
+   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+   <% include ../partials/footer %>
 </body>
 
 </html>

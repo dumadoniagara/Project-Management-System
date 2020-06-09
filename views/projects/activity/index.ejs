@@ -33,41 +33,35 @@
 
                     <div class="container">
                         <div class="row">
-                            <div class="col-sm-10 offset-sm-1">
+                            <div class="col-sm-8 offset-sm-2">
                                 <br>
 
-                                <!--  -->
+                                <% activity.forEach((item, index)=> { %>
                                 <div class="card">
                                     <div class="card-header text-center">
-                                        Header (Date Time)
+                                        <strong><%= item.date %></strong>
                                     </div>
 
-                                    <% activity.forEach(item =>{ %>
+                                    <% activity[index].data.forEach(item =>{ %>
                                     <div class="card-body">
                                         <h5 class="card-title"><%= item.title %></h5>
                                         <p class="card-text"><%= item.description %></p>
+
+                                        <br>
                                         <div class="progress">
                                             <div class="progress-bar progress-bar-striped bg-success" role="progressbar"
-                                                style="width: 50%;" aria-valuenow="75" aria-valuemin="0"
-                                                aria-valuemax="100">Progress : 50%</div>
+                                                style="width: 50%;" aria-valuenow="50" aria-valuemin="0"
+                                                aria-valuemax="100">Done : 50%</div>
                                         </div>
                                         <br>
-                                        <h6>Author : <%= item.authorname %>
-                                            <span style="text-align: right;" class="badge badge-secondary"><%= item.timeactivity %></span></h6>
+                                        <h5 style="text-align: center;">Author : <%= item.authorname %>
+                                            <span class="badge badge-info"><%= item.timeactivity %> WIB</span></h5>
                                     </div>
                                     <hr>
-                                <% }) %>
-
-
+                                    <% }) %>
                                 </div>
-
                                 <br>
-
-
-
-
-
-
+                                <% }) %>
                             </div>
                         </div>
                     </div>

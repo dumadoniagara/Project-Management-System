@@ -16,6 +16,10 @@ module.exports = (db) => {
     res.render('login', { messages: req.flash('loginInfo') });
   });
 
+  router.get('/signin', function (req, res, next) {
+    res.render('signin', { messages: req.flash('loginInfo') });
+  });
+
   router.post('/login', (req, res) => {
     const sql = 'SELECT * FROM users WHERE email = $1'
     const email = [req.body.email];
