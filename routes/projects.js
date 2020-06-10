@@ -405,6 +405,7 @@ module.exports = (db) => {
 
     router.get('/', isLoggedIn, function (req, res, next) {
         const { checkId, id, checkName, name, checkMember, memberId } = req.query;
+        const link = 'projects';
         let isSearch = false;
         let query = [];
         let search = "";
@@ -443,7 +444,8 @@ module.exports = (db) => {
                     pages,
                     totalPage,
                     page,
-                    url
+                    url,
+                    link
                 })
             })
             .catch(err => {
@@ -460,12 +462,14 @@ module.exports = (db) => {
     })
 
     router.get('/add', isLoggedIn, (req, res) => {
+        const link = 'projects';
         const sqlMembers = `SELECT DISTINCT (userid), CONCAT(firstname, ' ', lastname) AS fullname FROM users ORDER BY fullname`;
         usersModel(sqlMembers)
             .then((memberList) => {
                 res.render('projects/add', {
                     // res.status(200).json({
-                    memberList
+                    memberList,
+                    link
                 })
             })
             .catch(err => {
@@ -503,6 +507,7 @@ module.exports = (db) => {
     })
 
     router.get('/edit/:id', isLoggedIn, (req, res) => {
+        const link = 'projects';
         const id = parseInt(req.params.id);
         Promise.all([usersModel(), showMembers(id), showProject(id)])
             .then((data) => {
@@ -515,7 +520,8 @@ module.exports = (db) => {
                 res.render('projects/edit', {
                     memberList,
                     membersId,
-                    project
+                    project,
+                    link
                 })
             })
             .catch(err => {
@@ -545,6 +551,7 @@ module.exports = (db) => {
     // =============== PROJECT DETAIL PAGE ==============
 
     router.get('/overview/:projectid', isLoggedIn, (req, res) => {
+        const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         const search = "";
         Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search)])
@@ -553,7 +560,8 @@ module.exports = (db) => {
                 // res.status(200).json({
                 res.render('projects/overview', {
                     project,
-                    memberList
+                    memberList,
+                    link
                 })
 
             })
@@ -563,6 +571,7 @@ module.exports = (db) => {
     })
 
     router.get('/members/:projectid', isLoggedIn, (req, res) => {
+        const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         let isSearch = false;
         const { checkId, id, checkName, name, checkRole, role } = req.query;
@@ -596,7 +605,8 @@ module.exports = (db) => {
                 res.render('projects/members/index', {
                     project,
                     memberList,
-                    checkOptionMember
+                    checkOptionMember,
+                    link
                 })
             }).catch(err => {
                 console.log(err);
@@ -613,6 +623,7 @@ module.exports = (db) => {
     })
 
     router.get('/members/:id/add', isLoggedIn, (req, res) => {
+        const link = 'projects';
         const id = parseInt(req.params.id);
         Promise.all([showMembersWithConstraint(id), showProject(id)])
             .then(data => {
@@ -620,7 +631,8 @@ module.exports = (db) => {
                 res.render('projects/members/add', {
                     // res.json({
                     users,
-                    project
+                    project,
+                    link
                 })
             })
             .catch(err => {
@@ -641,6 +653,7 @@ module.exports = (db) => {
     })
 
     router.get('/members/:projectid/edit/:userid', isLoggedIn, (req, res) => {
+        const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         const userid = parseInt(req.params.userid);
         Promise.all([showProject(projectid), showUser(userid, projectid)])
@@ -649,7 +662,8 @@ module.exports = (db) => {
                 res.render('projects/members/edit', {
                     // res.json({
                     project,
-                    user
+                    user,
+                    link
                 })
             })
             .catch(err => {
@@ -683,6 +697,7 @@ module.exports = (db) => {
     })
 
     router.get('/issues/:projectid', isLoggedIn, (req, res) => {
+        const link = 'projects';
         const url = req.url == '/' ? `/?page=1` : req.url;
         const page = req.query.page || 1;
         const limit = 2;
@@ -702,7 +717,8 @@ module.exports = (db) => {
                     assignee,
                     url,
                     pages,
-                    page
+                    page,
+                    link
                 })
             })
             .catch(err => {
@@ -756,15 +772,16 @@ module.exports = (db) => {
 
     // render add-issue
     router.get('/issues/:projectid/add', isLoggedIn, (req, res) => {
+        const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         const search = "";
         Promise.all([usersModelbyProjectId(projectid, search), showProject(projectid)])
             .then((data) => {
                 let [users, project] = data;
                 res.render('projects/issues/add', {
-                    // res.json({
                     users,
-                    project
+                    project,
+                    link
                 })
             })
             .catch(err => {
@@ -817,6 +834,7 @@ module.exports = (db) => {
 
     // render edit-issue
     router.get('/issues/:projectid/edit/:issueid', (req, res) => {
+        const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         const issueid = parseInt(req.params.issueid);
         const authorid = req.session.userid;
@@ -833,7 +851,8 @@ module.exports = (db) => {
                             moment,
                             parentIssues,
                             issue,
-                            assignee
+                            assignee,
+                            link
                         })
                     })
             })
@@ -876,6 +895,7 @@ module.exports = (db) => {
     })
 
     router.get('/activity/:projectid', (req, res) => {
+        const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         Promise.all([showProject(projectid), showActivity(projectid)])
             .then((data) => {
@@ -892,7 +912,8 @@ module.exports = (db) => {
                     // res.json({
                     project,
                     moment,
-                    activity
+                    activity,
+                    link
                 })
             })
     })

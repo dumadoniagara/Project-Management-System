@@ -133,8 +133,8 @@
             <tbody>
                <% data.forEach (item => { %>
                <tr>
-                  <th scope="row" <%= checkOption.id != undefined ? '' : 'hidden' %>> <a
-                        href="/projects/overview/<%= item.projectid %>"><%= item.projectid %></a></th>
+                  <th scope="row" <%= checkOption.id != undefined ? '' : 'hidden' %>><a
+                        href="/projects/overview/<%= item.projectid %>"><span class="" ><%= item.projectid %></span></a></th>
                   <td <%= checkOption.name != undefined ? '' : 'hidden' %>><%= item.name %></td>
                   <td <%= checkOption.members!= undefined ? '' : 'hidden' %>>
                      <% if(item.members){ %>

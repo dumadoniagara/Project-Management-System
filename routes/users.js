@@ -8,7 +8,8 @@ let checkOption = {
   name: true,
   position: true,
   email: true,
-  type: true
+  type: true,
+  role: true
 }
 
 // ============================
@@ -20,7 +21,7 @@ module.exports = (db) => {
 
   showUsers = (offset, search) => {
     return new Promise((resolve, reject) => {
-      let sql = `SELECT userid, email, CONCAT(firstname, ' ', lastname) AS fullname, position, type FROM users ${search} ORDER BY userid ASC LIMIT 3 OFFSET ${offset} `;
+      let sql = `SELECT userid, email, CONCAT(firstname, ' ', lastname) AS fullname, position, type, isadmin FROM users ${search} ORDER BY userid ASC LIMIT 3 OFFSET ${offset} `;
       db.query(sql, [], (err, result) => {
         const data = result.rows;
         resolve(data);
@@ -40,8 +41,41 @@ module.exports = (db) => {
     })
   }
 
+  addUser = (form) => {
+    return new Promise((resolve, reject) => {
+      let sql = `INSERT INTO users (email, password, firstname, lastname, position, type, isadmin)
+      VALUES($1, $2, $3, $4, $5, $6, $7)`;
+      db.query(sql, [form.email, form.password, form.firstName, form.lastName, form.position, form.type, form.isAdmin], (err, result) => {
+        resolve();
+        reject(err);
+      })
+    })
+  }
+
+  showUserById = (userid) => {
+    return new Promise((resolve, reject) => {
+      let sql = `SELECT userid, email,firstname, lastname, password, position, type, isadmin FROM users WHERE userid = $1`;
+      db.query(sql, [userid], (err, result) => {
+        const data = result.rows[0];
+        resolve(data);
+        reject(err);
+      })
+    })
+  }
+
+  updateUser = (userid, form) => {
+    return new Promise((resolve, reject) => {
+      let sql = `UPDATE users SET firstname = $1, lastname = $2, email = $3, password = $4, position = $5, type = $6, isadmin = $7 WHERE userid = $8`;
+      db.query(sql, [form.firstName, form.lastName, form.email, form.password, form.position, form.type, form.isAdmin, userid], err => {
+        resolve();
+        reject(err);
+      })
+    })
+  }
+
   router.get('/', (req, res, next) => {
     const url = req.url == '/' ? `/?page=1` : req.url;
+    const link = 'users';
     const page = req.query.page || 1;
     const limit = 3;
     const offset = (page - 1) * limit;
@@ -50,32 +84,32 @@ module.exports = (db) => {
     let query = [];
     const { checkId, id, checkName, name, checkEmail, email, checkType, type, checkPosition, position } = req.query;
 
-    if(checkName && name){
+    if (checkName && name) {
       isSearch = true;
       query.push(`CONCAT(firstname,' ',lastname) ILIKE '%${name}%'`);
     }
-    if(checkId && id){
+    if (checkId && id) {
       isSearch = true;
       query.push(`userid = ${parseInt(id)}`);
     }
-    if(checkEmail && email){
+    if (checkEmail && email) {
       isSearch = true;
       query.push(`email = '${email}'`);
     }
-    if(checkPosition && position){
+    if (checkPosition && position) {
       isSearch = true;
       query.push(`position = '${position}'`);
     }
-    if(checkType && type){
+    if (checkType && type) {
       isSearch = true;
       query.push(`type = '${type}'`);
     }
 
-    if(isSearch){
+    if (isSearch) {
       search += `WHERE ${query.join(' AND ')}`;
     }
 
-    console.log(search);
+    console.log(url);
     Promise.all([showUsers(offset, search), countPages(search)])
       .then(data => {
         let [users, total] = data;
@@ -86,7 +120,9 @@ module.exports = (db) => {
           users,
           page,
           pages,
-          url
+          url,
+          messages: req.flash('userMessage'),
+          link
         })
       })
       .catch(err => console.log(err));
@@ -102,31 +138,83 @@ module.exports = (db) => {
     res.redirect('/users');
   })
 
+  router.get('/add', (req, res) => {
+    const link = 'users';
+    res.render('users/add', {
+      link
+    })
+  })
 
-
-  router.post('/add', function (req, res, next) {
-    bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
-      // Store hash in your password DB.
+  router.post('/add', (req, res) => {
+    const form = req.body;
+    bcrypt.hash(form.password, saltRounds, function (err, hash) {
+      // hash password
+      form.password = hash;
       if (err) return res.status(500).json({
         error: true,
         message: err
       })
-
-      const sql = 'INSERT INTO users (email, password, firstname, lastname) VALUES($1, $2, $3, $4)';
-      const values = [req.body.email, hash, req.body.firstname, req.body.lastname];
-
-      db.query(sql, values, (err) => {
-        if (err) return res.status(500).json({
-          error: true,
-          message: err
+      addUser(form)
+        .then(() => {
+          req.flash('userMessage', 'New user added successfully!');
+          res.redirect('/users')
         })
-        res.json({
-          error: false,
-          message: "data berhasil ditambahkan"
+        .catch(err => console.log(err));
+    })
+  })
+
+  router.get('/edit/:userid', (req, res) => {
+    const link = 'users';
+    const userid = req.params.userid;
+    showUserById(userid)
+      .then(user => {
+        res.render('users/edit', {
+          // res.json({
+          link,
+          user
         })
       })
-    });
-  });
+      .catch(err => console.log(err))
+  })
+
+  router.post('/edit/:userid', (req, res) => {
+    const userid = req.params.userid;
+    const form = req.body;
+    bcrypt.hash(form.password, saltRounds, function (err, hash) {
+      // hash password
+      form.password = hash;
+      if (err) return res.status(500).json({
+        error: true,
+        message: err
+      })
+      updateUser(userid, form)
+        .then(() => {
+          req.flash('userMessage', 'User updated successfully!');
+          res.redirect('/users')
+        })
+        .catch(err => console.log(err));
+    })
+  })
+
+  deleteUser = (userid) => {
+    return new Promise((resolve, reject) => {
+      let sql = `DELETE FROM users WHERE userid = $1`;
+      db.query(sql, [userid], err =>{
+        resolve();
+        reject(err);
+      })
+    })
+  }
+
+  router.get('/delete/:userid', (req, res) => {
+    const userid = req.params.userid;
+    deleteUser(userid)
+      .then(() => {
+        req.flash('userMessage', 'User deleted successfully!');
+        res.redirect('/users')
+      })
+      .catch(err => console.log(err))
+  })
 
   return router;
 }

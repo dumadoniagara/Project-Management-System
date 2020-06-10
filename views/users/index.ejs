@@ -17,6 +17,14 @@
     <div class="container">
         <h1>Users</h1>
         <hr>
+        <% if(messages.length > 0) {%>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <%= messages %>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <% } %>
         <div class="container">
             <h2 style="text-align: left">Filters</h2>
             <form action="" method="GET">
@@ -174,9 +182,17 @@
 
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="checkType" value="true"
-                                id="check-Type" <%= checkOption.type ? 'checked' : '' %>>
+                                id="check-type" <%= checkOption.type ? 'checked' : '' %>>
                             <label class="form-check-label" for="defaultCheck2">
                                 Type
+                            </label>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="checkRole" value="true"
+                                id="check-role" <%= checkOption.role ? 'checked' : '' %>>
+                            <label class="form-check-label" for="defaultCheck2">
+                                Role
                             </label>
                         </div>
                     </div>
@@ -197,6 +213,7 @@
                         <th scope="col" <%= checkOption.name ? '' : 'hidden' %>>Name</th>
                         <th scope="col" <%= checkOption.position ? '' : 'hidden' %>>Position</th>
                         <th scope="col" <%= checkOption.type ? '' : 'hidden' %>>Type Job</th>
+                        <th scope="col" <%= checkOption.role ? '' : 'hidden' %>>Role</th>
                         <th scope="col">Action</th>
                     </tr>
                 </thead>
@@ -210,6 +227,7 @@
                             <%= item.position == 'programmer' ? 'SOFTWARE DEVELOPER' : item.position.toUpperCase() %>
                         </td>
                         <td <%= checkOption.type ? '' : 'hidden' %>><%= item.type %></td>
+                        <td <%= checkOption.role ? '' : 'hidden' %>><%= item.isadmin == 'true' ? 'Admin': 'User' %></td>
                         <td>
                             <a href="/users/edit/<%= item.userid %>">
                                 <button type="button" class="btn btn-success">Edit</button>

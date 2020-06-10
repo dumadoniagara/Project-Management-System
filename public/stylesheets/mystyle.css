@@ -25,7 +25,7 @@ nav {
 }
 
 /* before-after CSS */
-.nav-link:hover::after{
+.nav-atas:hover::after{
     content : '';
     display: block;
     border-bottom: 3px solid #0B63DC;
@@ -39,5 +39,5 @@ nav {
 body {
     margin-top: 70px;
     margin-bottom: 80px;
-    font-family: Viga;
+   
  }

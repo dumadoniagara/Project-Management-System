@@ -59,12 +59,14 @@ module.exports = (db) => {
 
 
     router.get('/', isLoggedIn, function (req, res, next) {
+        const link = 'profile';
         let user = req.session.user;
         profileModel(user.userid)
             .then(data => {
                 res.render('profile', {
                     // res.status(200).json({
-                    data: data[0]
+                    data: data[0],
+                    link    
                 })
             })
             .catch(err => {

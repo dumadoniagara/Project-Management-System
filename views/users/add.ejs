@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Add User</title>
+   <% include ../partials/css-bootstrap %>
+   <style>
+      body {
+         margin-top: 80px;
+         margin-bottom: 80px;
+      }
+   </style>
+</head>
+
+<body>
+   <header>
+      <%- include ../partials/navbar %>
+   </header>
+
+   <div class="container">
+      <h1>Add New User</h1>
+      <hr>
+      <form action="/users/add" method="post">
+         <div class="form-group row">
+            <label for="first-name" class="col-sm-2 col-form-label">First Name</label>
+            <div class="col-sm-10">
+               <input type="text" class="form-control" id="first-name" name="firstName" value=""
+                  placeholder="First Name" required>
+            </div>
+         </div>
+
+         <div class="form-group row">
+            <label for="last-name" class="col-sm-2 col-form-label">Last Name</label>
+            <div class="col-sm-10">
+               <input type="text" class="form-control" id="last-name" name="lastName" value="" placeholder="Last Name"
+                  required>
+            </div>
+         </div>
+
+         <div class="form-group row">
+            <label for="email" class="col-sm-2 col-form-label">Email</label>
+            <div class="col-sm-10">
+               <input type="email" class="form-control" id="email" name="email" value="" placeholder="Email" required>
+            </div>
+         </div>
+
+         <div class="form-group row">
+            <label for="email" class="col-sm-2 col-form-label">Password</label>
+            <div class="col-sm-10">
+               <input type="password" class="form-control" id="password" name="password" value="" placeholder="Password"
+                  required>
+            </div>
+         </div>
+
+         <div class="form-group row">
+            <label for="position" class="col-sm-2 col-form-label">Position</label>
+            <div class="col-sm-10">
+               <select name="position" id="position" class="form-control">
+                  <option selected disabled> Choose default position ...</option>
+                  <option class="form-control" value="manager">Manager</option>
+                  <option class="form-control" value="programmer">Software Developer</option>
+                  <option class="form-control" value="quality assurance">Quality Assurance</option>
+               </select>
+            </div>
+         </div>
+
+         <div class="form-group row">
+            <label for="type-job" class="col-sm-2 col-form-label">Type Job</label>
+            <div class="col-sm-10">
+               <div class="form-check">
+                   <input class="form-check-input" type="radio" name="type" 
+                       value="fulltime">
+                   <label class="form-check-label">
+                       Fulltime
+                   </label>
+               </div>
+               <div class="form-check">
+                   <input class="form-check-input" type="radio" name="type" value="parttime">
+                   <label class="form-check-label">
+                       Part-time
+                   </label>
+               </div>
+           </div>
+         </div>
+
+         <div class="form-group row">
+            <label for="type-job" class="col-sm-2 col-form-label">Role</label>
+            <div class="col-sm-10">
+               <div class="form-check">
+                   <input class="form-check-input" type="radio" name="isAdmin" 
+                       value="true">
+                   <label class="form-check-label">
+                       Admin
+                   </label>
+               </div>
+               <div class="form-check">
+                   <input class="form-check-input" type="radio" name="isAdmin" value="false">
+                   <label class="form-check-label">
+                       User
+                   </label>
+               </div>
+           </div>
+         </div>
+
+         <div class="form-group row">
+            <div class="col-sm-2">
+               <button type="submit" class="btn btn-primary"> Submit </button>
+            </div>
+         </div>
+
+      </form>
+   </div>
+
+   <!-- Optional JavaScript -->
+   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+   <% include ../partials/footer %>
+</body>
+
+</html>
