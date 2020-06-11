@@ -265,8 +265,24 @@ module.exports = (db) => {
 
     function showIssues(projectid, offset) {
         return new Promise((resolve, reject) => {
-            db.query(`SELECT issues.*, CONCAT(users.firstname,' ',users.lastname) as authorname FROM issues LEFT JOIN users ON issues.author = users.userid WHERE issues.projectid = $1 ORDER BY issues.issueid ASC LIMIT 2 OFFSET ${offset}`, [projectid], (err, data) => {
+            db.query(`SELECT issues.*, CONCAT(users.firstname,' ',users.lastname) as authorname FROM issues LEFT JOIN users ON issues.author = users.userid WHERE issues.projectid = $1 ORDER BY issues.issueid ASC LIMIT 10 OFFSET ${offset}`, [projectid], (err, data) => {
                 let result = data.rows;
+                resolve(result);
+                reject(err);
+            })
+        })
+    }
+
+    function countTracker(projectid) {
+        return new Promise((resolve, reject) => {
+            db.query(`SELECT COUNT(CASE WHEN tracker = 'bug' THEN 1 ELSE NULL END) AS totalbug,
+            COUNT(CASE WHEN tracker = 'feature' THEN 1 ELSE NULL END) AS totalfeature,
+            COUNT(CASE WHEN tracker = 'support' THEN 1 ELSE NULL END) AS totalsupport,
+            COUNT(CASE WHEN tracker = 'bug' AND status != 'closed' THEN 1 ELSE NULL END) AS bugopen,
+            COUNT(CASE WHEN tracker = 'feature' AND status != 'closed' THEN 1 ELSE NULL END) AS featureopen,
+            COUNT(CASE WHEN tracker = 'support' AND status != 'closed' THEN 1 ELSE NULL END) AS supportopen
+       FROM issues WHERE projectid = $1`, [projectid], (err, data) => {
+                let result = data.rows[0];
                 resolve(result);
                 reject(err);
             })
@@ -550,20 +566,22 @@ module.exports = (db) => {
 
     // =============== PROJECT DETAIL PAGE ==============
 
+
+
     router.get('/overview/:projectid', isLoggedIn, (req, res) => {
         const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         const search = "";
-        Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search)])
+        Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search), countTracker(projectid)])
             .then((data) => {
-                let [project, memberList] = data;
-                // res.status(200).json({
+                let [project, memberList, tracker] = data;
                 res.render('projects/overview', {
                     project,
                     memberList,
-                    link
+                    link,
+                    tracker,
+                    projectid
                 })
-
             })
             .catch(err => {
                 console.log(err);
@@ -706,7 +724,7 @@ module.exports = (db) => {
         Promise.all([showProject(projectid), showIssues(projectid, offset), showAssignee(projectid), countPageIssues(projectid)])
             .then((data) => {
                 let [project, issues, assignee, total] = data;
-                const pages = Math.ceil(total/limit)
+                const pages = Math.ceil(total / limit)
                 res.render('projects/issues/index', {
                     // res.json({
                     project,
@@ -862,10 +880,6 @@ module.exports = (db) => {
     })
 
 
-
-
-
-
     // post edit-issue
     router.post('/issues/:projectid/edit/:issueid', (req, res) => {
         const issueid = parseInt(req.params.issueid);
@@ -919,12 +933,9 @@ module.exports = (db) => {
     })
 
     // Testing function related to Query-DB
-    router.get('/testactivity', (req, res) => {
+    router.get('/test/:projectid', (req, res) => {
         const projectid = parseInt(req.params.projectid);
-        let search = "";
-        let limit = 100;
-        let offset = 0;
-        Promise.all([projectsModel(search, limit, offset), usersModel()])
+        Promise.all([countTracker(projectid)])
             .then(result => {
                 res.json({
                     result

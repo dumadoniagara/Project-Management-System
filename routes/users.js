@@ -198,10 +198,18 @@ module.exports = (db) => {
 
   deleteUser = (userid) => {
     return new Promise((resolve, reject) => {
-      let sql = `DELETE FROM users WHERE userid = $1`;
-      db.query(sql, [userid], err =>{
-        resolve();
-        reject(err);
+      let sqlMember = `DELETE FROM members WHERE userid = $1`;
+      let sqlUser = `DELETE FROM users WHERE userid = $1`;
+      let sqlIssue = `DELETE FROM issues WHERE assignee = $1`;
+      db.query(sqlIssue, [userid], err => {
+        if (err) res.status(500).json(err);
+        db.query(sqlMember, [userid], err => {
+          if (err) res.status(500).json(err);
+          db.query(sqlUser, [userid], err => {
+            resolve();
+            reject(err);
+          })
+        })
       })
     })
   }

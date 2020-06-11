@@ -178,8 +178,11 @@
                             <label class="col-sm-2 col-form-label">Assignee</label>
                             <div class="form-group col-sm-8">
                                 <select class="form-control" name="assignee">
+                                    <% if(!assignee[0]){ %>
+                                    <option value="" selected disabled>Choose assignee..</option>
+                                    <% } %>
                                     <% users.forEach( item => { %>
-                                    <% if(item.userid == assignee[0].userid){ %>
+                                    <% if(assignee[0] && item.userid == assignee[0].userid){ %>
                                     <option value="<%= item.userid %>" selected><%= item.fullname  %></option>
                                     <% } %>
                                     <option value="<%= item.userid %>"> <%= item.fullname %></option>

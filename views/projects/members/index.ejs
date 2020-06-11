@@ -152,7 +152,7 @@
                                             <button type="button" class="btn btn-success">Edit</button>
                                         </a>
                                         <a href="<%= `/projects/members/${project.projectid}/delete/${item.userid}` %>">
-                                            <button type="button" class="btn btn-danger">Delete</button>
+                                            <button type="button" class="btn btn-danger" onclick="javascript: return confirm('Delete this member will cause the issues of project assigned by the member to be deleted, are you sure?')">Delete</button>
                                         </a>
                                     </td>
                                 </tr>
