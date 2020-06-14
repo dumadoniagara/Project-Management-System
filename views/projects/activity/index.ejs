@@ -36,36 +36,56 @@
                             <div class="col-sm-8 offset-sm-2">
                                 <br>
 
-                                <% activity.forEach((item, index)=> { %>
-                                <div class="card">
-                                    <div class="card-header text-center">
-                                        <strong><%= item.date %></strong>
-                                    </div>
+                                <% if(activity.length == 0) { %>
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    This project doesn't have any activities. Edit an issue to add new activity
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <% } %>
 
-                                    <% activity[index].data.forEach(item =>{ %>
-                                    <div class="card-body">
-                                        <h5 class="card-title"><%= item.title %></h5>
-                                        <p class="card-text"><%= item.description %></p>
-
-                                        <br>
-                                        <div class="progress">
-                                            <div class="progress-bar progress-bar-striped bg-success" role="progressbar"
-                                                style="width: 50%;" aria-valuenow="50" aria-valuemin="0"
-                                                aria-valuemax="100">Done : 50%</div>
+                                    <% activity.forEach((item, index)=> { %>
+                                    <div class="card">
+                                        <div class="card-header text-center">
+                                            <h5><%= item.date %></h5>
                                         </div>
-                                        <br>
-                                        <h5 style="text-align: center;">Author : <%= item.authorname %>
-                                            <span class="badge badge-info"><%= item.timeactivity %> WIB</span></h5>
+
+                                        <% activity[index].data.forEach(item =>{ %>
+                                        <div class="card-body">
+                                            <h5 class="card-title"><%= item.title %></h5>
+                                            <p class="card-text">Spent Time (Hours):
+                                                from <b><%= (!item.description[0][0]) ? '0' : item.description[0][0]%></b>
+                                                updated to <strong><%= item.description[0][1]%></strong></p>
+
+                                            <p>Done (%): from <strong><%= parseInt(item.description[1][0])%></strong> updated to <strong><%= parseInt(item.description[1][1])%></strong></p>
+                                            <div class="progress">
+                                                <div class="progress-bar progress-bar-striped bg-success"
+                                                    role="progressbar"
+                                                    style="width: <%= parseInt(item.description[1][0])%>%"
+                                                    aria-valuenow="<%= parseInt(item.description[1][0])%>"
+                                                    aria-valuemin="0" aria-valuemax="100">
+                                                    <%= parseInt(item.description[1][0])%>%<%= parseInt(item.description[1][1] - item.description[1][0]) == 0 ? '(No Change)' : '' %> </div>
+                                                <div class="progress-bar progress-bar-striped bg-info"
+                                                    role="progressbar"
+                                                    style="width: <%= parseInt(item.description[1][1] - item.description[1][0])%>%"
+                                                    aria-valuenow="<%= parseInt(item.description[1][1] - item.description[1][0])%>"
+                                                    aria-valuemin="0" aria-valuemax="100">
+                                                    <%= parseInt(item.description[1][1])%>%</div>
+                                            </div>
+
+                                            <br>
+                                            <h5 style="text-align: center;">Author : <%= item.authorname %>
+                                                <span class="badge badge-info"><%= item.timeactivity %> WIB</span></h5>
+                                        </div>
+                                        <hr>
+                                        <% }) %>
                                     </div>
-                                    <hr>
+                                    <br>
                                     <% }) %>
                                 </div>
-                                <br>
-                                <% }) %>
                             </div>
                         </div>
                     </div>
-                </div>
             </main>
         </div>
     </div>

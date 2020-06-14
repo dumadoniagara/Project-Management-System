@@ -363,8 +363,10 @@ module.exports = (db) => {
     recordActivity = (form, issueid, authorid, projectid) => {
         return new Promise((resolve, reject) => {
             let sql = `INSERT INTO activity (title, description, author, projectid, time) VALUES($1, $2, $3, $4, NOW())`;
-            let title = `${form.subject} #${issueid} (${form.tracker}) - [${form.status}]`
-            let description = `${form.description}`
+            let title = `${form.subject} #${issueid} (${form.tracker}) - [${form.status}]`;
+            let spentString = `${form.oldSpent}-${form.spentTime}`;
+            let doneString = `${form.oldDone}-${form.done}`;
+            let description = `${spentString}/${doneString}`;
             db.query(sql, [title, description, authorid, projectid], err => {
                 resolve();
                 reject(err);
@@ -407,6 +409,11 @@ module.exports = (db) => {
         activity.forEach(item => {
             item.dateactivity = moment(item.dateactivity).format('YYYY-MM-DD');
             item.timeactivity = moment(item.timeactivity, 'HH:mm:ss.SSS').format('HH:mm:ss');
+            item.description = item.description.split('/').map(item => {
+                return item.split('-');
+            })
+            item.spent= item.description[0];
+            item.done = item.description[1];
         })
         let allDate = activity.map(value => value.dateactivity);
         let uniqueDate = allDate.filter((value, index) => allDate.indexOf(value) == index);
@@ -459,7 +466,7 @@ module.exports = (db) => {
                     page,
                     url,
                     link,
-                    login : req.session.user
+                    login: req.session.user
                 })
             })
             .catch(err => {
@@ -484,7 +491,7 @@ module.exports = (db) => {
                     // res.status(200).json({
                     memberList,
                     link,
-                    login : req.session.user
+                    login: req.session.user
                 })
             })
             .catch(err => {
@@ -537,7 +544,7 @@ module.exports = (db) => {
                     membersId,
                     project,
                     link,
-                    login : req.session.user
+                    login: req.session.user
                 })
             })
             .catch(err => {
@@ -578,8 +585,8 @@ module.exports = (db) => {
                     link,
                     tracker,
                     projectid,
-                    projectPath : 'overview',
-                    login : req.session.user
+                    projectPath: 'overview',
+                    login: req.session.user
                 })
             })
             .catch(err => {
@@ -630,8 +637,8 @@ module.exports = (db) => {
                     page,
                     url,
                     pages,
-                    projectPath : 'members',
-                    login : req.session.user
+                    projectPath: 'members',
+                    login: req.session.user
                 })
             }).catch(err => {
                 console.log(err);
@@ -658,8 +665,8 @@ module.exports = (db) => {
                     users,
                     project,
                     link,
-                    projectPath : 'members',
-                    login : req.session.user
+                    projectPath: 'members',
+                    login: req.session.user
                 })
             })
             .catch(err => {
@@ -691,8 +698,8 @@ module.exports = (db) => {
                     project,
                     user,
                     link,
-                    projectPath : 'members',
-                    login : req.session.user
+                    projectPath: 'members',
+                    login: req.session.user
                 })
             })
             .catch(err => {
@@ -771,8 +778,8 @@ module.exports = (db) => {
                     pages,
                     page,
                     link,
-                    projectPath : 'issues',
-                    login : req.session.user
+                    projectPath: 'issues',
+                    login: req.session.user
                 })
             })
             .catch(err => {
@@ -836,8 +843,8 @@ module.exports = (db) => {
                     users,
                     project,
                     link,
-                    projectPath : 'issues',
-                    login : req.session.user
+                    projectPath: 'issues',
+                    login: req.session.user
                 })
             })
             .catch(err => {
@@ -909,8 +916,8 @@ module.exports = (db) => {
                             issue,
                             assignee,
                             link,
-                            projectPath : 'issues',
-                            login : req.session.user
+                            projectPath: 'issues',
+                            login: req.session.user
                         })
                     })
             })
@@ -960,8 +967,20 @@ module.exports = (db) => {
                         item.date = 'Today';
                     } else if (item.date == moment().subtract(1, 'days').format('YYYY-MM-DD')) {
                         item.date = 'Yesterday';
+                    } else {
+                        item.date = moment(item.date).format("MMMM Do, YYYY")
                     }
+                    
                 })
+
+
+                // console.log(project);
+                // console.log(activity);
+                // res.json({
+                //     activity,
+                // })
+
+
                 res.render('projects/activity/index', {
                     project,
                     moment,
@@ -971,7 +990,9 @@ module.exports = (db) => {
                     login : req.session.user
                 })
             })
+            
     })
+
 
     return router;
 }

@@ -32,6 +32,9 @@
                     <br>
                     <form action="" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="projectId" value="<%= project.projectid %>">
+                        <input type="hidden" name="oldSpent" value="<%= issue.spenttime %>">
+                        <input type="hidden" name="oldDone" value="<%= issue.done %>">
+
                         <div class="form-group row">
                             <label class="col-sm-2 col-form-label">
                                 Tracker
