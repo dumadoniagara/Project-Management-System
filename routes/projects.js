@@ -3,7 +3,6 @@ var router = express.Router();
 var moment = require('moment');
 const path = require('path');
 
-
 let checkOption = {
     id: true,
     name: true,
@@ -972,14 +971,6 @@ module.exports = (db) => {
                     }
                     
                 })
-
-
-                // console.log(project);
-                // console.log(activity);
-                // res.json({
-                //     activity,
-                // })
-
 
                 res.render('projects/activity/index', {
                     project,

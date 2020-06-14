@@ -5,9 +5,9 @@ const saltRounds = 10;
 
 const isLoggedIn = (req, res, next) => {
   if (req.session.user) {
-      next();
+    next();
   } else {
-      res.redirect('/');
+    res.redirect('/');
   }
 }
 
@@ -72,28 +72,6 @@ module.exports = (db) => {
     })
   }
 
-  updateUser = (userid, query, updateVal) => {
-    return new Promise((resolve, reject) => {
-      let sql = `UPDATE users SET ${query} WHERE userid = $1`;
-      db.query(sql, [userid, ...updateVal], err => {
-        let check = sql;
-        resolve(check);
-        reject(err);
-      })
-    })
-  }
-
-
-  // updateUserNoPass = (userid, form) => {
-  //   return new Promise((resolve, reject) => {
-  //     let sql = `UPDATE users SET firstname = $1, lastname = $2, email = $3, position = $5, type = $6, isadmin = $7 WHERE userid = $8`;
-  //     db.query(sql, [form.firstName, form.lastName, form.email, form.position, form.type, form.isAdmin, userid], err => {
-  //       resolve();
-  //       reject(err);
-  //     })
-  //   })
-  // }
-
   deleteUser = (userid) => {
     return new Promise((resolve, reject) => {
       let sqlMember = `DELETE FROM members WHERE userid = $1`;
@@ -112,7 +90,7 @@ module.exports = (db) => {
     })
   }
   // ======================================= ROUTES ==================================
-  router.get('/',isLoggedIn, (req, res, next) => {
+  router.get('/', isLoggedIn, (req, res, next) => {
     const url = req.url == '/' ? `/?page=1` : req.url;
     const link = 'users';
     const page = req.query.page || 1;
@@ -161,7 +139,7 @@ module.exports = (db) => {
           url,
           messages: req.flash('userMessage'),
           link,
-          login : req.session.user
+          login: req.session.user
         })
       })
       .catch(err => console.log(err));
@@ -181,7 +159,7 @@ module.exports = (db) => {
     const link = 'users';
     res.render('users/add', {
       link,
-      login : req.session.user
+      login: req.session.user
     })
   })
 
@@ -212,38 +190,38 @@ module.exports = (db) => {
           // res.json({
           link,
           user,
-          login : req.session.user
+          login: req.session.user
         })
       })
       .catch(err => console.log(err))
   })
 
-  router.post('/edit/:userid', isLoggedIn, (req, res) => {
-    const userid = req.params.userid;
-    const form = req.body;
-    if (form.password) {
-      bcrypt.hash(form.password, saltRounds, function (err, hash) {
-        form.password = hash;
-        if (err) return res.status(500).json({
-          error: true,
-          message: err
-        })
-        updateUser(userid, form)
-          .then(() => {
-            req.flash('userMessage', 'User updated successfully!');
-            res.redirect('/users')
-          })
-          .catch(err => console.log(err));
-      })
-    } else {
-      updateUserNoPass(userid, form)
-        .then(() => {
-          req.flash('userMessage', 'User updated successfully!');
-          res.redirect('/users')
-        })
-        .catch(err => console.log(err));
-    }
-  })
+  // router.post('/edit/:userid', isLoggedIn, (req, res) => {
+  //   const userid = req.params.userid;
+  //   const form = req.body;
+  //   if (form.password) {
+  //     bcrypt.hash(form.password, saltRounds, function (err, hash) {
+  //       form.password = hash;
+  //       if (err) return res.status(500).json({
+  //         error: true,
+  //         message: err
+  //       })
+  //       updateUser(userid, form)
+  //         .then(() => {
+  //           req.flash('userMessage', 'User updated successfully!');
+  //           res.redirect('/users')
+  //         })
+  //         .catch(err => console.log(err));
+  //     })
+  //   } else {
+  //     updateUserNoPass(userid, form)
+  //       .then(() => {
+  //         req.flash('userMessage', 'User updated successfully!');
+  //         res.redirect('/users')
+  //       })
+  //       .catch(err => console.log(err));
+  //   }
+  // })
 
   router.get('/delete/:userid', isLoggedIn, (req, res) => {
     const userid = req.params.userid;
@@ -255,35 +233,27 @@ module.exports = (db) => {
       .catch(err => console.log(err))
   });
 
-  router.post('/testedit/:userid', isLoggedIn, (req, res) => {
-    const userid = parseInt(req.params.userid);
-    const form = req.body;
-    let countBinding = 2;
-    let updateKey = [];
-    let updateVal = [];
-    for (const property in form) {
-      if (form[property]) {
-        updateKey.push(`${property} = $${countBinding}`);
-        updateVal.push(form[property]);
-        countBinding++;
-      }
-    }
-    let check = [userid, ...updateVal];
-    const query = updateKey.join(', ');
-    updateUser(userid, query, updateVal)
-      .then((test) => {
-        console.log(test);
-        res.json({
-          message: 'update success',
-          updateVal,
-          query,
-          check
+  router.post('/edit/:userid', (req, res) => {
+    if (!req.body.password) {
+      let sql = `UPDATE users
+    SET firstname=$1, lastname=$2, position=$3, type=$4, isadmin=$5
+    WHERE userid=$6`
+      db.query(sql, [req.body.firstname, req.body.lastname, req.body.position, req.body.type, req.body.isadmin, req.params.userid], err => {
+        if (err) console.log(err);
+        res.redirect('/users')
+      })
+    } else if (req.body.password) {
+      bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
+        if (err) res.status(500).json(err);
+        let sql = `UPDATE users
+    SET firstname=$1, lastname=$2, position=$3, type=$4, isadmin=$5, password=$6
+    WHERE userid=$7`
+        db.query(sql, [req.body.firstname, req.body.lastname, req.body.position, req.body.type, req.body.isadmin, hash, req.params.userid], err => {
+          if (err) console.log(err);
+          res.redirect('/users')
         })
       })
-      .catch(err => console.log(err));
-
-
+    }
   })
-
   return router;
 }
