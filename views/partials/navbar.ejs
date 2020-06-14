@@ -16,7 +16,7 @@
                 <li class="nav-item <%= link == 'profile' ? 'active' : '' %>">
                     <a class="nav-link nav-atas" href="/profile">Profile</a>
                 </li>
-                <li class="nav-item <%= link == 'users' ? 'active' : '' %>">
+                <li class="nav-item <%= link == 'users' ? 'active' : '' %>" <%= login.isadmin == 'true' ? '' : 'hidden' %>>
                     <a class="nav-link nav-atas" href="/users">Users</a>
                 </li>
             </ul>

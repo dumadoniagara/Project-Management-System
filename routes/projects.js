@@ -46,6 +46,7 @@ const isLoggedIn = (req, res, next) => {
 }
 
 module.exports = (db) => {
+    // ==================================== FUNCTION QUERY ==================================
     function projectsModel(search, limit, offset) {
         return new Promise((resolve, reject) => {
             const sqlAll = `SELECT projects.projectid, projects.name, STRING_AGG (users.firstname || ' ' || users.lastname,',' ORDER BY users.firstname, users.lastname) members FROM projects LEFT JOIN members ON projects.projectid = members.projectid LEFT JOIN users ON members.userid = users.userid ${search} GROUP BY projects.projectid LIMIT ${limit} OFFSET ${offset}`;
@@ -91,9 +92,9 @@ module.exports = (db) => {
         })
     }
 
-    function usersModelbyProjectId(projectid, search) {
+    function usersModelbyProjectId(projectid, search, limit, offset) {
         return new Promise((resolve, reject) => {
-            const sql = `SELECT CONCAT(firstname, ' ', lastname) AS fullname, members.role, members.userid FROM users LEFT JOIN members ON users.userid = members.userid WHERE members.projectid = $1 ${search} ORDER BY fullname`;
+            const sql = `SELECT CONCAT(firstname, ' ', lastname) AS fullname, members.role, members.userid FROM users LEFT JOIN members ON users.userid = members.userid WHERE members.projectid = $1 ${search} ORDER BY fullname LIMIT ${limit} OFFSET ${offset} `;
             db.query(sql, [projectid], (err, result) => {
                 let data = result.rows;
                 resolve(data)
@@ -263,9 +264,9 @@ module.exports = (db) => {
         })
     }
 
-    function showIssues(projectid, offset) {
+    function showIssues(projectid, search, limit, offset) {
         return new Promise((resolve, reject) => {
-            db.query(`SELECT issues.*, CONCAT(users.firstname,' ',users.lastname) as authorname FROM issues LEFT JOIN users ON issues.author = users.userid WHERE issues.projectid = $1 ORDER BY issues.issueid ASC LIMIT 10 OFFSET ${offset}`, [projectid], (err, data) => {
+            db.query(`SELECT issues.*, CONCAT(users.firstname,' ',users.lastname) as authorname FROM issues LEFT JOIN users ON issues.author = users.userid WHERE issues.projectid = $1 ${search} ORDER BY issues.issueid ASC LIMIT ${limit} OFFSET ${offset}`, [projectid], (err, data) => {
                 let result = data.rows;
                 resolve(result);
                 reject(err);
@@ -289,9 +290,9 @@ module.exports = (db) => {
         })
     }
 
-    function countPageIssues(projectid) {
+    function countPage(id, table, projectid, search) {
         return new Promise((resolve, reject) => {
-            db.query(`SELECT COUNT(issueid) AS total FROM issues WHERE projectid = $1`, [projectid], (err, data) => {
+            db.query(`SELECT COUNT(${id}) AS total FROM ${table} WHERE projectid = $1 ${search}`, [projectid], (err, data) => {
                 let total = data.rows[0].total;
                 resolve(total);
                 reject(err);
@@ -416,9 +417,7 @@ module.exports = (db) => {
         })
     }
 
-
     // ================================== ROUTES ================================
-
     router.get('/', isLoggedIn, function (req, res, next) {
         const { checkId, id, checkName, name, checkMember, memberId } = req.query;
         const link = 'projects';
@@ -446,8 +445,6 @@ module.exports = (db) => {
         if (isSearch) {
             search += `WHERE ${query.join(' AND ')}`;
         }
-
-        console.log(url);
         Promise.all([usersModel(), projectsModel(search, limit, offset), pageModel(search)])
             .then(result => {
                 const [memberList, data, totalPage] = result;
@@ -461,7 +458,8 @@ module.exports = (db) => {
                     totalPage,
                     page,
                     url,
-                    link
+                    link,
+                    login : req.session.user
                 })
             })
             .catch(err => {
@@ -485,7 +483,8 @@ module.exports = (db) => {
                 res.render('projects/add', {
                     // res.status(200).json({
                     memberList,
-                    link
+                    link,
+                    login : req.session.user
                 })
             })
             .catch(err => {
@@ -537,7 +536,8 @@ module.exports = (db) => {
                     memberList,
                     membersId,
                     project,
-                    link
+                    link,
+                    login : req.session.user
                 })
             })
             .catch(err => {
@@ -563,16 +563,13 @@ module.exports = (db) => {
     })
 
 
-
-    // =============== PROJECT DETAIL PAGE ==============
-
-
+    // ========================== ROUTES PROJECT DETAIL =================================
 
     router.get('/overview/:projectid', isLoggedIn, (req, res) => {
         const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         const search = "";
-        Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search), countTracker(projectid)])
+        Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search, 'ALL', 0), countTracker(projectid)])
             .then((data) => {
                 let [project, memberList, tracker] = data;
                 res.render('projects/overview', {
@@ -580,7 +577,9 @@ module.exports = (db) => {
                     memberList,
                     link,
                     tracker,
-                    projectid
+                    projectid,
+                    projectPath : 'overview',
+                    login : req.session.user
                 })
             })
             .catch(err => {
@@ -589,15 +588,17 @@ module.exports = (db) => {
     })
 
     router.get('/members/:projectid', isLoggedIn, (req, res) => {
+        const url = req.url == `/members/${req.params.projectid}` ? `/members/${req.params.projectid}/?page=1` : req.url;
+        const page = req.query.page || 1;
+        const limit = 3;
+        const offset = (page - 1) * limit;
         const link = 'projects';
+        console.log(url);
         const projectid = parseInt(req.params.projectid);
         let isSearch = false;
         const { checkId, id, checkName, name, checkRole, role } = req.query;
         let query = [];
         let search = "";
-        // // const page = req.query.page || 1;
-        // // const limit = 100;
-        // // const offset = (page - 1) * limit;
 
         if (checkId && id) {
             query.push(`members.userid = ${parseInt(id)}`);
@@ -616,15 +617,21 @@ module.exports = (db) => {
             search += `AND ${query.join(' AND ')}`;
         }
 
-        Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search)])
+        Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search, 3, offset), countPage('userid', 'members', projectid, search)])
             .then((data) => {
-                let [project, memberList] = data;
+                let [project, memberList, totalMembers] = data;
+                let pages = Math.ceil(totalMembers / limit);
                 // res.status(200).json({
                 res.render('projects/members/index', {
                     project,
                     memberList,
                     checkOptionMember,
-                    link
+                    link,
+                    page,
+                    url,
+                    pages,
+                    projectPath : 'members',
+                    login : req.session.user
                 })
             }).catch(err => {
                 console.log(err);
@@ -650,7 +657,9 @@ module.exports = (db) => {
                     // res.json({
                     users,
                     project,
-                    link
+                    link,
+                    projectPath : 'members',
+                    login : req.session.user
                 })
             })
             .catch(err => {
@@ -681,7 +690,9 @@ module.exports = (db) => {
                     // res.json({
                     project,
                     user,
-                    link
+                    link,
+                    projectPath : 'members',
+                    login : req.session.user
                 })
             })
             .catch(err => {
@@ -716,12 +727,35 @@ module.exports = (db) => {
 
     router.get('/issues/:projectid', isLoggedIn, (req, res) => {
         const link = 'projects';
-        const url = req.url == '/' ? `/?page=1` : req.url;
+        const url = req.url == `/issues/${req.params.projectid}` ? `/issues/${req.params.projectid}/?page=1` : req.url;
         const page = req.query.page || 1;
-        const limit = 2;
+        const limit = 3;
         const offset = (page - 1) * limit;
         const projectid = parseInt(req.params.projectid);
-        Promise.all([showProject(projectid), showIssues(projectid, offset), showAssignee(projectid), countPageIssues(projectid)])
+
+        let isSearch = false;
+        const { checkId, id, checkSubject, subject, checkTracker, tracker } = req.query;
+        let query = [];
+        let search = "";
+
+        if (checkId && id) {
+            query.push(`issues.issueid = ${parseInt(id)}`);
+            isSearch = true;
+        }
+        if (checkSubject && subject) {
+            query.push(`issues.subject ILIKE '%${subject}%'`);
+            isSearch = true;
+        }
+        if (checkTracker && tracker) {
+            query.push(`issues.tracker = '${tracker}'`);
+            isSearch = true;
+        }
+
+        if (isSearch) {
+            search += `AND ${query.join(' AND ')}`;
+        }
+
+        Promise.all([showProject(projectid), showIssues(projectid, search, limit, offset), showAssignee(projectid), countPage('issueid', 'issues', projectid, search)])
             .then((data) => {
                 let [project, issues, assignee, total] = data;
                 const pages = Math.ceil(total / limit)
@@ -736,7 +770,9 @@ module.exports = (db) => {
                     url,
                     pages,
                     page,
-                    link
+                    link,
+                    projectPath : 'issues',
+                    login : req.session.user
                 })
             })
             .catch(err => {
@@ -793,13 +829,15 @@ module.exports = (db) => {
         const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         const search = "";
-        Promise.all([usersModelbyProjectId(projectid, search), showProject(projectid)])
+        Promise.all([usersModelbyProjectId(projectid, search, 'ALL', 0), showProject(projectid)])
             .then((data) => {
                 let [users, project] = data;
                 res.render('projects/issues/add', {
                     users,
                     project,
-                    link
+                    link,
+                    projectPath : 'issues',
+                    login : req.session.user
                 })
             })
             .catch(err => {
@@ -851,13 +889,13 @@ module.exports = (db) => {
     })
 
     // render edit-issue
-    router.get('/issues/:projectid/edit/:issueid', (req, res) => {
+    router.get('/issues/:projectid/edit/:issueid', isLoggedIn, (req, res) => {
         const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         const issueid = parseInt(req.params.issueid);
         const authorid = req.session.userid;
         const search = "";
-        Promise.all([usersModelbyProjectId(projectid, search), showProject(projectid), showIssueById(projectid, issueid), showParentIssues(projectid)])
+        Promise.all([usersModelbyProjectId(projectid, search, 'ALL', 0), showProject(projectid), showIssueById(projectid, issueid), showParentIssues(projectid)])
             .then((data) => {
                 let [users, project, issue, parentIssues] = data;
                 showUser(issue.assignee, projectid)
@@ -870,7 +908,9 @@ module.exports = (db) => {
                             parentIssues,
                             issue,
                             assignee,
-                            link
+                            link,
+                            projectPath : 'issues',
+                            login : req.session.user
                         })
                     })
             })
@@ -881,7 +921,7 @@ module.exports = (db) => {
 
 
     // post edit-issue
-    router.post('/issues/:projectid/edit/:issueid', (req, res) => {
+    router.post('/issues/:projectid/edit/:issueid', isLoggedIn, (req, res) => {
         const issueid = parseInt(req.params.issueid);
         const projectid = parseInt(req.params.projectid);
         const authorid = req.session.user.userid;
@@ -908,7 +948,7 @@ module.exports = (db) => {
         }
     })
 
-    router.get('/activity/:projectid', (req, res) => {
+    router.get('/activity/:projectid', isLoggedIn, (req, res) => {
         const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         Promise.all([showProject(projectid), showActivity(projectid)])
@@ -923,28 +963,15 @@ module.exports = (db) => {
                     }
                 })
                 res.render('projects/activity/index', {
-                    // res.json({
                     project,
                     moment,
                     activity,
-                    link
+                    link,
+                    projectPath : 'activity',
+                    login : req.session.user
                 })
             })
     })
-
-    // Testing function related to Query-DB
-    router.get('/test/:projectid', (req, res) => {
-        const projectid = parseInt(req.params.projectid);
-        Promise.all([countTracker(projectid)])
-            .then(result => {
-                res.json({
-                    result
-                })
-            })
-            .catch(err => console.log(err));
-    })
-
-
 
     return router;
 }

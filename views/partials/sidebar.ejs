@@ -1,23 +1,23 @@
-<nav class="col-md-2 d-none d-md-block bg-light sidebar shadow-sm">
+<nav class="col-md-2 d-none d-md-block navbar-light bg-light sidebar shadow-md mt-3">
     <div class="sidebar-sticky">
-        <ul class="nav flex-column">
+        <ul class="nav flex-column nav-pills">
             <li class="nav-item">
-                <a class="nav-link active" href="/projects/overview/<%= project.projectid %>">
+                <a class="nav-link <%= projectPath == 'overview' ? 'active' : '' %>" href="/projects/overview/<%= project.projectid %>">
                     Overview
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/projects/activity/<%= project.projectid %>">
+                <a class="nav-link <%= projectPath == 'activity' ? 'active' : '' %>" href="/projects/activity/<%= project.projectid %>">
                     Activity
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/projects/members/<%= project.projectid %>">
+                <a class="nav-link <%= projectPath == 'members' ? 'active' : '' %>" href="/projects/members/<%= project.projectid %>">
                     Members
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/projects/issues/<%= project.projectid %>">
+                <a class="nav-link <%= projectPath == 'issues' ? 'active' : '' %>" href="/projects/issues/<%= project.projectid %>">
                     Issues
                 </a>
             </li>

@@ -26,7 +26,7 @@
          <div class="form-group row">
             <label for="first-name" class="col-sm-2 col-form-label">First Name</label>
             <div class="col-sm-10">
-               <input type="text" class="form-control" id="first-name" name="firstName" value="<%= user.firstname %>"
+               <input type="text" class="form-control" id="first-name" name="firstname" value="<%= user.firstname %>"
                   placeholder="First Name" required>
             </div>
          </div>
@@ -34,7 +34,7 @@
          <div class="form-group row">
             <label for="last-name" class="col-sm-2 col-form-label">Last Name</label>
             <div class="col-sm-10">
-               <input type="text" class="form-control" id="last-name" name="lastName" value="<%= user.lastname %>"
+               <input type="text" class="form-control" id="last-name" name="lastname" value="<%= user.lastname %>"
                   placeholder="Last Name" required>
             </div>
          </div>
@@ -50,7 +50,7 @@
          <div class="form-group row">
             <label for="email" class="col-sm-2 col-form-label">Password</label>
             <div class="col-sm-10">
-               <input type="password" class="form-control" id="password" name="password" value=""
+               <input type="password" class="form-control" name="password" value=""
                   placeholder="Password">
             </div>
          </div>
@@ -66,7 +66,7 @@
          <div class="form-group row">
             <label for="position" class="col-sm-2 col-form-label">Position</label>
             <div class="col-sm-10">
-               <select name="position" id="position" class="form-control">
+               <select name="position" class="form-control">
                   <option class="form-control" value="manager" <%= user.position == 'manager' ? 'selected' : '' %>>
                      Manager</option>
                   <option class="form-control" value="programmer"
@@ -101,14 +101,14 @@
             <label for="type-job" class="col-sm-2 col-form-label">Role</label>
             <div class="col-sm-10">
                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="isAdmin" value="true"
+                  <input class="form-check-input" type="radio" name="isadmin" value="true"
                      <%= user.isadmin ? 'checked' : '' %>>
                   <label class="form-check-label">
                      Admin
                   </label>
                </div>
                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="isAdmin" value="false"
+                  <input class="form-check-input" type="radio" name="isadmin" value="false"
                      <%= user.isadmin ? '' : 'checked' %>>
                   <label class="form-check-label">
                      User

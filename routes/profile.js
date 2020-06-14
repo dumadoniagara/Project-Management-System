@@ -13,88 +13,61 @@ function isLoggedIn(req, res, next) {
 
 module.exports = (db) => {
 
-    let profileModel = (id) => {
+    showUserById = (userid) => {
         return new Promise((resolve, reject) => {
-            db.query(`SELECT * FROM users where userid = ${id}`, (err, result) => {
-                let data = result.rows;
-                if (data.length == 0) {
-                    return res.send('error user data')
-                    // bisa ditamabahin flash (data tidak ditemukan)
-                }
-                resolve(data)
-                reject(err)
-            })
+          let sql = `SELECT userid, email,firstname, lastname, password, position, type, isadmin FROM users WHERE userid = $1`;
+          db.query(sql, [userid], (err, result) => {
+            const data = result.rows[0];
+            resolve(data);
+            reject(err);
+          })
         })
-    }
+      }
 
-    let userEdit = (user, data) => {
-        if (data.password) {
-            bcrypt.hash(data.password, saltRounds, (err, hash) => {
-                if (err) {
-                    res.json({
-                        error: true,
-                        message: "error crypting password"
-                    })
-                }
-                return new Promise((resolve, reject) => {
-                    let sql = `UPDATE users SET firstname=$1, lastname=$2, position=$3, type=$4, password=$5 WHERE userid = $6`;
-                    db.query(sql, [data.firstname, data.lastname, data.position, data.type, hash, user.userid], (err) => {
-                        resolve();
-                        reject(err);
-                    });
-                });
-            })
-        } else {
-            return new Promise((resolve, reject) => {
-                let sql = `UPDATE users
-                SET firstname=$1, lastname=$2, position=$3, type=$4
-                WHERE userid = $5`
-                db.query(sql, [data.firstname, data.lastname, data.position, data.type, user.userid], (err) => {
-                    resolve();
-                    reject(err);
-                })
-            })
-        }
-    }
+      updateUser = (userid, form) => {
+        return new Promise((resolve, reject) => {
+          let sql = `UPDATE users SET firstname = $1, lastname = $2, email = $3, password = $4, position = $5, type = $6, isadmin = $7 WHERE userid = $8`;
+          db.query(sql, [form.firstName, form.lastName, form.email, form.password, form.position, form.type, form.isAdmin, userid], err => {
+            resolve();
+            reject(err);
+          })
+        })
+      }
 
 
-    router.get('/', isLoggedIn, function (req, res, next) {
+    router.get('/', isLoggedIn, function (req, res) {
         const link = 'profile';
         let user = req.session.user;
-        profileModel(user.userid)
+        showUserById(user.userid)
             .then(data => {
                 res.render('profile', {
-                    // res.status(200).json({
-                    data: data[0],
-                    link    
+                    data,
+                    link,
+                    login : req.session.user    
                 })
             })
             .catch(err => {
-                res.json({
-                    error: true,
-                    message: 'error profileModel'
-                })
+                console.log(err);
             })
     })
 
     router.post('/', isLoggedIn, function (req, res, next) {
-        let data = req.body;
+        let form = req.body;
         let user = req.session.user;
-        userEdit(user, data)
-            .then(() => {
-                // req.flash('dataUpdated', 'Data Profile Berhasil di Update');
-                // res.redirect('/profile')
-                res.status(200).json({
-                    user,
-                    data
-                })
+        bcrypt.hash(form.password, saltRounds, function (err, hash) {
+            // hash password
+            form.password = hash;
+            if (err) return res.status(500).json({
+              error: true,
+              message: err
             })
-            .catch((err) => {
-                res.status(500).json({
-                    error: true,
-                    message: 'error pada pengubahan data'
-                })
-            })
+            updateUser(userid, form)
+              .then(() => {
+                req.flash('userMessage', 'User updated successfully!');
+                res.redirect('/users')
+              })
+              .catch(err => console.log(err));
+          })
     });
 
     return router;

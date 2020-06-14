@@ -9,7 +9,7 @@
   <meta name="description" content="">
   <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
   <meta name="generator" content="Jekyll v3.8.6">
-  <title>Login</title>
+  <title>PMS Login</title>
 
   <link rel="canonical" href="">
 
@@ -17,21 +17,8 @@
   <link href="./stylesheets/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
-  <!-- Favicons -->
-  <link rel="apple-touch-icon" href="https://getbootstrap.com/docs/4.4/assets/img/favicons/apple-touch-icon.png"
-    sizes="180x180">
-  <link rel="icon" href="https://getbootstrap.com/docs/4.4/assets/img/favicons/favicon-32x32.png" sizes="32x32"
-    type="image/png">
-  <link rel="icon" href="https://getbootstrap.com/docs/4.4/assets/img/favicons/favicon-16x16.png" sizes="16x16"
-    type="image/png">
-  <link rel="manifest" href="https://getbootstrap.com/docs/4.4/assets/img/favicons/manifest.json">
-  <link rel="mask-icon" href="https://getbootstrap.com/docs/4.4/assets/img/favicons/safari-pinned-tab.svg"
-    color="#563d7c">
-  <link rel="icon" href="https://getbootstrap.com/docs/4.4/assets/img/favicons/favicon.ico">
+  <!-- Google-Font -->
   <link href="https://fonts.googleapis.com/css2?family=Viga&display=swap" rel="stylesheet">
-  <meta name="msapplication-config" content="/docs/4.4/assets/img/favicons/browserconfig.xml">
-  <meta name="theme-color" content="#563d7c">
-
 
   <style>
     .bd-placeholder-img {
@@ -43,17 +30,18 @@
       user-select: none;
     }
 
-    .login {
-      margin-top: 15%;
-    }
-
     .tombol {
-      border-radius: 50px;
+      border-radius: 30px;
     }
 
     img {
       border: solid 2px #eaeaea;
-      border-radius: 100px;
+      border-radius: 50px;
+    }
+
+    .judul {
+      font-family: Viga;
+      text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.3);
     }
 
 
@@ -70,8 +58,9 @@
 <body>
   <div class="container text-center">
     <form class="form-signin" action="/login" method="POST">
-      <img class="mb-4" src="./images/login.jpg" alt="" width="250">
-      <h1 class="h3 mb-3 font-weight-normal" style="font-family: Viga;">Project Management System</h1>
+
+      <img class="mb-4 text-center" src="./images/login.jpg" alt="project-management-system" width="300">
+      <h1 class="h3 mb-3 font-weight-normal judul">Project Management System</h1>
       <label for="inputEmail" class="sr-only">Email address</label>
       <input type="email" name="email" id="inputEmail" class="form-control" placeholder="Email address" required=""
         autofocus="">
@@ -89,10 +78,52 @@
       </div>
       <% } %>
 
-      <button class="btn btn-lg btn-primary btn-block tombol" type="submit">Sign in</button>
+      <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+      <!-- Button trigger modal -->
+      <button type="button" class="btn btn-block mt-1" data-toggle="modal" data-target="#exampleModal">
+        Access account
+      </button>
+
+      <!-- Modal -->
+      <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">Access Account</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body text-left">
+              <strong>Admin</strong> <br>
+              Email Address &emsp; : admin01@gmail.com <br>
+              Password&emsp; &emsp; &emsp;: 010203 <br>
+              <br>
+              <strong>User</strong> <br>
+              Email Address &emsp; : user01@gmail.com <br>
+              Password&emsp; &emsp; &emsp;: 010203
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </form>
-    <p class="mt-5 mb-3 text-muted footer"> © 2020 Duma Doniagara Sambora </p>
+    <p class="mt-3 mb-3 text-muted footer"> © 2020 Duma Doniagara Sambora </p>
   </div>
+
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+    integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous">
+    </script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+    </script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+    </script>
 
 </body>
 
