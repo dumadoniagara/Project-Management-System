@@ -1,6 +1,6 @@
 # Project-Management-System 
 
-(Web app to ease you manage your projects with agile methodology with your partners)
+(Web application to ease manage your projects with your partners based on agile methodology)
 
 Stack technologies :
 - Node.js (express)
