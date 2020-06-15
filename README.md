@@ -7,5 +7,6 @@ Stack technologies :
 - ejs (template engine)
 - Postgresql (database)
 - NPM (others package)
+- Bootstrap 4.0 (View)
 
 Demo : https://pms-doniagara.herokuapp.com/
