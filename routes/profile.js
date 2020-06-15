@@ -24,17 +24,6 @@ module.exports = (db) => {
     })
   }
 
-  updateUser = (userid, form) => {
-    return new Promise((resolve, reject) => {
-      let sql = `UPDATE users SET firstname = $1, lastname = $2, email = $3, password = $4, position = $5, type = $6, isadmin = $7 WHERE userid = $8`;
-      db.query(sql, [form.firstName, form.lastName, form.email, form.password, form.position, form.type, form.isAdmin, userid], err => {
-        resolve();
-        reject(err);
-      })
-    })
-  }
-
-
   router.get('/', isLoggedIn, function (req, res) {
     const link = 'profile';
     let user = req.session.user;
@@ -52,7 +41,7 @@ module.exports = (db) => {
       })
   })
 
-  router.post('/', (req, res) => {
+  router.post('/',isLoggedIn, (req, res) => {
     let user = req.session.user;
     if (!req.body.password) {
       let sql = `UPDATE users

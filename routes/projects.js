@@ -599,7 +599,6 @@ module.exports = (db) => {
         const limit = 3;
         const offset = (page - 1) * limit;
         const link = 'projects';
-        console.log(url);
         const projectid = parseInt(req.params.projectid);
         let isSearch = false;
         const { checkId, id, checkName, name, checkRole, role } = req.query;
@@ -623,7 +622,7 @@ module.exports = (db) => {
             search += `AND ${query.join(' AND ')}`;
         }
 
-        Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search, 3, offset), countPage('userid', 'members', projectid, search)])
+        Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search, 3, offset), countPage('users.userid', 'members LEFT JOIN users ON members.userid = users.userid', projectid, search)])
             .then((data) => {
                 let [project, memberList, totalMembers] = data;
                 let pages = Math.ceil(totalMembers / limit);
