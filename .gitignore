@@ -1,3 +1,4 @@
 .package-lock.json
 SQL/
-node_modules/
+node_modules
+package-lock.json
