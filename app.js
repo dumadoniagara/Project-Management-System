@@ -11,28 +11,27 @@ const app = express();
 
 const { Pool } = require('pg');
 // localhost
-// const pool = new Pool({
-//   user: 'postgres',
-//   host: 'localhost',
-//   database: 'pmsdb',
-//   password: '72144',
-//   port: 5432,
-// })
+const pool = new Pool({
+  user: 'postgres',
+  host: 'localhost',
+  database: 'pmsdb',
+  password: '72144',
+  port: 5432,
+})
 
 // database heroku
-const pool = new Pool({
-    user: 'qhcqlwfzikihmw',
-    host: 'ec2-3-234-169-147.compute-1.amazonaws.com',
-    database: 'd2e6pki28s5bjm',
-    password: '5b1d5a9ee7d88e2dd71370f5b6a6b976bd3184fce73b260bcdb09a03703a283d',
-    port: 5432,
-  })
+// const pool = new Pool({
+//     user: 'qhcqlwfzikihmw',
+//     host: 'ec2-3-234-169-147.compute-1.amazonaws.com',
+//     database: 'd2e6pki28s5bjm',
+//     password: '5b1d5a9ee7d88e2dd71370f5b6a6b976bd3184fce73b260bcdb09a03703a283d',
+//     port: 5432,
+//   })
 
 const indexRouter = require('./routes/index')(pool);
 const usersRouter = require('./routes/users')(pool);
 const projectRouter = require('./routes/projects')(pool);
 const profileRouter = require('./routes/profile')(pool);
-const apiRouter = require('./routes/apitesting')(pool);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));  
@@ -53,7 +52,6 @@ app.use(flash());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/api', apiRouter);
 app.use('/projects', projectRouter);
 app.use('/profile', profileRouter);
 

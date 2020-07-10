@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var moment = require('moment');
 const path = require('path');
+const Project = require('../models/projects')
+const Users = require('../models/users')
 
 let checkOption = {
     id: true,
@@ -45,51 +47,6 @@ const isLoggedIn = (req, res, next) => {
 }
 
 module.exports = (db) => {
-    // ==================================== FUNCTION QUERY ==================================
-    function projectsModel(search, limit, offset) {
-        return new Promise((resolve, reject) => {
-            const sqlAll = `SELECT projects.projectid, projects.name, STRING_AGG (users.firstname || ' ' || users.lastname,',' ORDER BY users.firstname, users.lastname) members FROM projects LEFT JOIN members ON projects.projectid = members.projectid LEFT JOIN users ON members.userid = users.userid ${search} GROUP BY projects.projectid LIMIT ${limit} OFFSET ${offset}`;
-            db.query(sqlAll, (err, result) => {
-                let data = result.rows;
-                if (data.length == 0) {
-                    resolve(data = []);
-                }
-                for (i = 0; i < data.length; i++) {
-                    if (data[i].members != null) {
-                        let memberList = data[i].members.split(',');
-                        data[i].members = memberList;
-                    }
-                }
-                resolve(data)
-                reject(err)
-            })
-        })
-    };
-
-    let pageModel = (search) => {
-        return new Promise((resolve, reject) => {
-            const sqlPage = `SELECT COUNT(DISTINCT projects.projectid) as total FROM projects LEFT JOIN members ON projects.projectid = members.projectid LEFT JOIN users ON members.userid = users.userid ${search}`
-            db.query(sqlPage, (err, result) => {
-                let data = result.rows;
-                if (data.length == 0) {
-                    resolve(data = [])
-                }
-                resolve(data)
-                reject(err)
-            })
-        })
-    }
-
-    function usersModel() {
-        return new Promise((resolve, reject) => {
-            const sqlMembers = `SELECT DISTINCT (userid), CONCAT(firstname, ' ', lastname) AS fullname FROM users ORDER BY fullname`;
-            db.query(sqlMembers, (err, result) => {
-                let data = result.rows;
-                resolve(data)
-                reject(err)
-            })
-        })
-    }
 
     function usersModelbyProjectId(projectid, search, limit, offset) {
         return new Promise((resolve, reject) => {
@@ -103,59 +60,6 @@ module.exports = (db) => {
     }
 
 
-    let addProject = (form) => {
-        return new Promise((resolve, reject) => {
-            let sql = `INSERT INTO projects (name) VALUES ($1)`
-            db.query(sql, [form.projectName], (err) => {
-                resolve();
-                reject(err);
-            })
-        })
-    }
-
-    function addMembers(form) {
-        let values = [];
-        return new Promise((resolve, reject) => {
-            db.query(`SELECT MAX (projectid) FROM projects`, (err, data) => {
-                let projectId = data.rows[0].max;
-                resolve(projectId);
-                reject(err);
-                let sqlInsert = `INSERT INTO members (projectid, userid) VALUES `
-                if (typeof form.members == 'object') {
-                    form.members.forEach(item => {
-                        values.push(`(${projectId}, ${item})`);
-                    })
-                    sqlInsert += values.join(', ');
-                } else {
-                    sqlInsert += `(${projectId}, ${form.members})`
-                }
-                db.query(sqlInsert, (err) => {
-                    resolve();
-                    reject(err);
-                });
-            });
-        });
-    }
-
-    function deleteProject(id) {
-        return new Promise((resolve, reject) => {
-            let sql = `DELETE FROM projects WHERE projectid = $1`
-            db.query(sql, [id], (err) => {
-                resolve();
-                reject(err);
-            })
-        })
-    }
-
-    function deleteProjectMembers(id) {
-        return new Promise((resolve, reject) => {
-            let sql = `DELETE FROM members WHERE projectid = $1`
-            db.query(sql, [id], (err) => {
-                resolve();
-                reject(err);
-            })
-        })
-    }
 
     function showMembers(id) {
         return new Promise((resolve, reject) => {
@@ -411,7 +315,7 @@ module.exports = (db) => {
             item.description = item.description.split('/').map(item => {
                 return item.split('-');
             })
-            item.spent= item.description[0];
+            item.spent = item.description[0];
             item.done = item.description[1];
         })
         let allDate = activity.map(value => value.dateactivity);
@@ -451,7 +355,7 @@ module.exports = (db) => {
         if (isSearch) {
             search += `WHERE ${query.join(' AND ')}`;
         }
-        Promise.all([usersModel(), projectsModel(search, limit, offset), pageModel(search)])
+        Promise.all([Users.usersModel(db), Project.projectsModel(search, limit, offset, db), Project.pageModel(search, db)])
             .then(result => {
                 const [memberList, data, totalPage] = result;
                 const pages = Math.ceil(totalPage[0].total / limit);
@@ -483,11 +387,9 @@ module.exports = (db) => {
 
     router.get('/add', isLoggedIn, (req, res) => {
         const link = 'projects';
-        const sqlMembers = `SELECT DISTINCT (userid), CONCAT(firstname, ' ', lastname) AS fullname FROM users ORDER BY fullname`;
-        usersModel(sqlMembers)
+        Users.usersModel(db)
             .then((memberList) => {
                 res.render('projects/add', {
-                    // res.status(200).json({
                     memberList,
                     link,
                     login: req.session.user
@@ -500,10 +402,9 @@ module.exports = (db) => {
 
     router.post('/add', isLoggedIn, (req, res) => {
         let form = req.body;
-
-        addProject(form)
+        Project.addProject(form, db)
             .then(() => {
-                addMembers(form)
+                Project.addMembers(form, db)
                     .then(() => {
                         res.redirect('/projects');
                     })
@@ -518,8 +419,9 @@ module.exports = (db) => {
 
     router.get('/delete/:id', isLoggedIn, (req, res) => {
         const id = parseInt(req.params.id);
-        Promise.all([deleteProject(id), deleteProjectMembers(id)])
+        Promise.all([Project.deleteProject(id, db)])
             .then(() => {
+                console.log('joss')
                 res.redirect('/projects');
             })
             .catch((err) => {
@@ -530,7 +432,7 @@ module.exports = (db) => {
     router.get('/edit/:id', isLoggedIn, (req, res) => {
         const link = 'projects';
         const id = parseInt(req.params.id);
-        Promise.all([usersModel(), showMembers(id), showProject(id)])
+        Promise.all([Users.usersModel(db), showMembers(id), showProject(id)])
             .then((data) => {
                 let [memberList, memberProject, project] = data;
                 let membersId = [];
@@ -626,7 +528,6 @@ module.exports = (db) => {
             .then((data) => {
                 let [project, memberList, totalMembers] = data;
                 let pages = Math.ceil(totalMembers / limit);
-                // res.status(200).json({
                 res.render('projects/members/index', {
                     project,
                     memberList,
@@ -968,7 +869,7 @@ module.exports = (db) => {
                     } else {
                         item.date = moment(item.date).format("MMMM Do, YYYY")
                     }
-                    
+
                 })
 
                 res.render('projects/activity/index', {
@@ -976,11 +877,11 @@ module.exports = (db) => {
                     moment,
                     activity,
                     link,
-                    projectPath : 'activity',
-                    login : req.session.user
+                    projectPath: 'activity',
+                    login: req.session.user
                 })
             })
-            
+
     })
 
 
