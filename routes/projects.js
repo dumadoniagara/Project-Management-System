@@ -59,17 +59,15 @@ module.exports = (db) => {
         })
     }
 
-
-
-    function showMembers(id) {
-        return new Promise((resolve, reject) => {
-            db.query(`SELECT * FROM members WHERE projectid = $1`, [id], (err, data) => {
-                let result = data.rows;
-                resolve(result);
-                reject(err);
-            })
-        })
-    }
+    // function showMembers(id) {
+    //     return new Promise((resolve, reject) => {
+    //         db.query(`SELECT * FROM members WHERE projectid = $1`, [id], (err, data) => {
+    //             let result = data.rows;
+    //             resolve(result);
+    //             reject(err);
+    //         })
+    //     })
+    // }
 
     function showUser(userid, projectid) {
         return new Promise((resolve, reject) => {
@@ -91,33 +89,33 @@ module.exports = (db) => {
         })
     }
 
-    function showProject(projectid) {
-        return new Promise((resolve, reject) => {
-            db.query(`SELECT name, projectid FROM projects WHERE projectid = $1`, [projectid], (err, data) => {
-                let result = data.rows[0];
-                resolve(result);
-                reject(err);
-            })
-        })
-    }
-    function updateProjectName(form) {
-        return new Promise((resolve, reject) => {
-            db.query(`UPDATE projects SET name = $1 WHERE projectid = $2`, [form.projectName, form.projectId], (err) => {
-                resolve();
-                reject(err);
-            })
-        })
-    }
+    // function showProject(projectid) {
+    //     return new Promise((resolve, reject) => {
+    //         db.query(`SELECT name, projectid FROM projects WHERE projectid = $1`, [projectid], (err, data) => {
+    //             let result = data.rows[0];
+    //             resolve(result);
+    //             reject(err);
+    //         })
+    //     })
+    // }
+    // function updateProjectName(form) {
+    //     return new Promise((resolve, reject) => {
+    //         db.query(`UPDATE projects SET name = $1 WHERE projectid = $2`, [form.projectName, form.projectId], (err) => {
+    //             resolve();
+    //             reject(err);
+    //         })
+    //     })
+    // }
 
-    function deleteMember(form) {
-        return new Promise((resolve, reject) => {
-            let sqlDelete = `DELETE FROM members WHERE projectid = $1`;
-            db.query(sqlDelete, [parseInt(form.projectId)], (err) => {
-                resolve();
-                reject(err);
-            })
-        })
-    }
+    // function deleteMember(form) {
+    //     return new Promise((resolve, reject) => {
+    //         let sqlDelete = `DELETE FROM members WHERE projectid = $1`;
+    //         db.query(sqlDelete, [parseInt(form.projectId)], (err) => {
+    //             resolve();
+    //             reject(err);
+    //         })
+    //     })
+    // }
 
     function updateProjectMember(form) {
         return new Promise((resolve, reject) => {
@@ -432,7 +430,7 @@ module.exports = (db) => {
     router.get('/edit/:id', isLoggedIn, (req, res) => {
         const link = 'projects';
         const id = parseInt(req.params.id);
-        Promise.all([Users.usersModel(db), showMembers(id), showProject(id)])
+        Promise.all([Users.usersModel(db), Project.showMembers(id, db), Project.showProject(id, db)])
             .then((data) => {
                 let [memberList, memberProject, project] = data;
                 let membersId = [];
@@ -455,7 +453,7 @@ module.exports = (db) => {
 
     router.post('/edit', isLoggedIn, (req, res) => {
         let form = req.body;
-        Promise.all([updateProjectName(form), deleteMember(form)])
+        Promise.all([Project.updateProjectName(form, db), Project.deleteMember(form, db)])
             .then(() => {
                 updateProjectMember(form)
                     .then(() => {

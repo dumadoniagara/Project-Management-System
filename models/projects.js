@@ -87,7 +87,51 @@ class Project {
          })
       })
    }
+
+   static showMembers(id, db) {
+      return new Promise((resolve, reject) => {
+         db.query(`SELECT * FROM members WHERE projectid = $1`, [id], (err, data) => {
+            let result = data.rows;
+            resolve(result);
+            reject(err);
+         })
+      })
+   }
+
+   static showProject(projectid, db) {
+      return new Promise((resolve, reject) => {
+         db.query(`SELECT name, projectid FROM projects WHERE projectid = $1`, [projectid], (err, data) => {
+            let result = data.rows[0];
+            resolve(result);
+            reject(err);
+         })
+      })
+   }
+
+   static updateProjectName(form, db) {
+      return new Promise((resolve, reject) => {
+         db.query(`UPDATE projects SET name = $1 WHERE projectid = $2`, [form.projectName, form.projectId], (err) => {
+            resolve();
+            reject(err);
+         })
+      })
+   }
+
+   deleteMember(form, db) {
+      return new Promise((resolve, reject) => {
+         let sqlDelete = `DELETE FROM members WHERE projectid = $1`;
+         db.query(sqlDelete, [parseInt(form.projectId)], (err) => {
+            resolve();
+            reject(err);
+         })
+      })
+   }
+
+
+
 }
+
+
 
 
 module.exports = Project;
