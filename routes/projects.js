@@ -46,28 +46,28 @@ const isLoggedIn = (req, res, next) => {
     }
 }
 
+manipulateActivity = (activity) => {
+    activity.forEach(item => {
+        item.dateactivity = moment(item.dateactivity).format('YYYY-MM-DD');
+        item.timeactivity = moment(item.timeactivity, 'HH:mm:ss.SSS').format('HH:mm:ss');
+        item.description = item.description.split('/').map(item => {
+            return item.split('-');
+        })
+        item.spent = item.description[0];
+        item.done = item.description[1];
+    })
+    let allDate = activity.map(value => value.dateactivity);
+    let uniqueDate = allDate.filter((value, index) => allDate.indexOf(value) == index);
+    return uniqueDate.map(date => {
+        return {
+            date, data: activity.filter((value) => value.dateactivity == date)
+        }
+    })
+}
+
 module.exports = (db) => {
 
-    function usersModelbyProjectId(projectid, search, limit, offset) {
-        return new Promise((resolve, reject) => {
-            const sql = `SELECT CONCAT(firstname, ' ', lastname) AS fullname, members.role, members.userid FROM users LEFT JOIN members ON users.userid = members.userid WHERE members.projectid = $1 ${search} ORDER BY fullname LIMIT ${limit} OFFSET ${offset} `;
-            db.query(sql, [projectid], (err, result) => {
-                let data = result.rows;
-                resolve(data)
-                reject(err)
-            })
-        })
-    }
 
-    // function showMembers(id) {
-    //     return new Promise((resolve, reject) => {
-    //         db.query(`SELECT * FROM members WHERE projectid = $1`, [id], (err, data) => {
-    //             let result = data.rows;
-    //             resolve(result);
-    //             reject(err);
-    //         })
-    //     })
-    // }
 
     function showUser(userid, projectid) {
         return new Promise((resolve, reject) => {
@@ -79,43 +79,7 @@ module.exports = (db) => {
         })
     }
 
-    function showMembersWithConstraint(projectid) {
-        return new Promise((resolve, reject) => {
-            db.query(`SELECT userid, CONCAT(firstname,' ', lastname) AS fullname FROM users WHERE userid NOT IN (SELECT userid FROM members WHERE projectid = $1)`, [projectid], (err, data) => {
-                let users = data.rows;
-                resolve(users);
-                reject(err);
-            })
-        })
-    }
 
-    // function showProject(projectid) {
-    //     return new Promise((resolve, reject) => {
-    //         db.query(`SELECT name, projectid FROM projects WHERE projectid = $1`, [projectid], (err, data) => {
-    //             let result = data.rows[0];
-    //             resolve(result);
-    //             reject(err);
-    //         })
-    //     })
-    // }
-    // function updateProjectName(form) {
-    //     return new Promise((resolve, reject) => {
-    //         db.query(`UPDATE projects SET name = $1 WHERE projectid = $2`, [form.projectName, form.projectId], (err) => {
-    //             resolve();
-    //             reject(err);
-    //         })
-    //     })
-    // }
-
-    // function deleteMember(form) {
-    //     return new Promise((resolve, reject) => {
-    //         let sqlDelete = `DELETE FROM members WHERE projectid = $1`;
-    //         db.query(sqlDelete, [parseInt(form.projectId)], (err) => {
-    //             resolve();
-    //             reject(err);
-    //         })
-    //     })
-    // }
 
     function updateProjectMember(form) {
         return new Promise((resolve, reject) => {
@@ -136,15 +100,7 @@ module.exports = (db) => {
         })
     }
 
-    function addProjectMember(form) {
-        return new Promise((resolve, reject) => {
-            let sqlInsert = `INSERT INTO members (projectid, userid, role) VALUES ($1,$2,$3)`
-            db.query(sqlInsert, [form.projectId, form.user, form.role], (err) => {
-                resolve();
-                reject(err);
-            })
-        })
-    }
+
 
     function editMember(form, userid) {
         return new Promise((resolve, reject) => {
@@ -170,32 +126,6 @@ module.exports = (db) => {
             db.query(`SELECT issues.*, CONCAT(users.firstname,' ',users.lastname) as authorname FROM issues LEFT JOIN users ON issues.author = users.userid WHERE issues.projectid = $1 ${search} ORDER BY issues.issueid ASC LIMIT ${limit} OFFSET ${offset}`, [projectid], (err, data) => {
                 let result = data.rows;
                 resolve(result);
-                reject(err);
-            })
-        })
-    }
-
-    function countTracker(projectid) {
-        return new Promise((resolve, reject) => {
-            db.query(`SELECT COUNT(CASE WHEN tracker = 'bug' THEN 1 ELSE NULL END) AS totalbug,
-            COUNT(CASE WHEN tracker = 'feature' THEN 1 ELSE NULL END) AS totalfeature,
-            COUNT(CASE WHEN tracker = 'support' THEN 1 ELSE NULL END) AS totalsupport,
-            COUNT(CASE WHEN tracker = 'bug' AND status != 'closed' THEN 1 ELSE NULL END) AS bugopen,
-            COUNT(CASE WHEN tracker = 'feature' AND status != 'closed' THEN 1 ELSE NULL END) AS featureopen,
-            COUNT(CASE WHEN tracker = 'support' AND status != 'closed' THEN 1 ELSE NULL END) AS supportopen
-       FROM issues WHERE projectid = $1`, [projectid], (err, data) => {
-                let result = data.rows[0];
-                resolve(result);
-                reject(err);
-            })
-        })
-    }
-
-    function countPage(id, table, projectid, search) {
-        return new Promise((resolve, reject) => {
-            db.query(`SELECT COUNT(${id}) AS total FROM ${table} WHERE projectid = $1 ${search}`, [projectid], (err, data) => {
-                let total = data.rows[0].total;
-                resolve(total);
                 reject(err);
             })
         })
@@ -296,34 +226,6 @@ module.exports = (db) => {
         })
     }
 
-    function showActivity(projectid) {
-        return new Promise((resolve, reject) => {
-            db.query(`SELECT activity.activityid, activity.title, activity.description, CONCAT(users.firstname,' ',users.lastname) AS authorname, (time AT TIME ZONE 'Asia/Jakarta'):: time AS timeactivity, (time AT TIME ZONE 'Asia/Jakarta'):: date AS dateactivity FROM activity LEFT JOIN users ON activity.author = users.userid WHERE projectid = $1 ORDER BY dateactivity DESC, timeactivity DESC`, [projectid], (err, data) => {
-                let result = data.rows;
-                resolve(result);
-                reject(err);
-            })
-        })
-    }
-
-    manipulateActivity = (activity) => {
-        activity.forEach(item => {
-            item.dateactivity = moment(item.dateactivity).format('YYYY-MM-DD');
-            item.timeactivity = moment(item.timeactivity, 'HH:mm:ss.SSS').format('HH:mm:ss');
-            item.description = item.description.split('/').map(item => {
-                return item.split('-');
-            })
-            item.spent = item.description[0];
-            item.done = item.description[1];
-        })
-        let allDate = activity.map(value => value.dateactivity);
-        let uniqueDate = allDate.filter((value, index) => allDate.indexOf(value) == index);
-        return uniqueDate.map(date => {
-            return {
-                date, data: activity.filter((value) => value.dateactivity == date)
-            }
-        })
-    }
 
     // ================================== ROUTES ================================
     router.get('/', isLoggedIn, function (req, res, next) {
@@ -455,7 +357,7 @@ module.exports = (db) => {
         let form = req.body;
         Promise.all([Project.updateProjectName(form, db), Project.deleteMember(form, db)])
             .then(() => {
-                updateProjectMember(form)
+                Project.updateProjectMember(form, db)
                     .then(() => {
                         res.redirect('/projects')
                     })
@@ -475,7 +377,7 @@ module.exports = (db) => {
         const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         const search = "";
-        Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search, 'ALL', 0), countTracker(projectid)])
+        Promise.all([Project.showProject(projectid, db), Project.usersModelbyProjectId(projectid, search, 'ALL', 0, db), Project.countTracker(projectid, db)])
             .then((data) => {
                 let [project, memberList, tracker] = data;
                 res.render('projects/overview', {
@@ -522,7 +424,7 @@ module.exports = (db) => {
             search += `AND ${query.join(' AND ')}`;
         }
 
-        Promise.all([showProject(projectid), usersModelbyProjectId(projectid, search, 3, offset), countPage('users.userid', 'members LEFT JOIN users ON members.userid = users.userid', projectid, search)])
+        Promise.all([Project.showProject(projectid, db), Project.usersModelbyProjectId(projectid, search, 3, offset, db), Project.countPage('users.userid', 'members LEFT JOIN users ON members.userid = users.userid', projectid, search, db)])
             .then((data) => {
                 let [project, memberList, totalMembers] = data;
                 let pages = Math.ceil(totalMembers / limit);
@@ -554,11 +456,10 @@ module.exports = (db) => {
     router.get('/members/:id/add', isLoggedIn, (req, res) => {
         const link = 'projects';
         const id = parseInt(req.params.id);
-        Promise.all([showMembersWithConstraint(id), showProject(id)])
+        Promise.all([Project.showMembersWithConstraint(id, db), Project.showProject(id, db)])
             .then(data => {
                 let [users, project] = data;
                 res.render('projects/members/add', {
-                    // res.json({
                     users,
                     project,
                     link,
@@ -574,7 +475,7 @@ module.exports = (db) => {
     router.post('/members/:id/add', isLoggedIn, (req, res) => {
         const id = parseInt(req.params.id);
         const form = req.body;
-        addProjectMember(form)
+        Project.addProjectMember(form, db)
             .then(() => {
                 res.redirect(`/projects/members/${id}`);
             })
@@ -659,7 +560,7 @@ module.exports = (db) => {
             search += `AND ${query.join(' AND ')}`;
         }
 
-        Promise.all([showProject(projectid), showIssues(projectid, search, limit, offset), showAssignee(projectid), countPage('issueid', 'issues', projectid, search)])
+        Promise.all([showProject(projectid), showIssues(projectid, search, limit, offset), showAssignee(projectid), Project.countPage('issueid', 'issues', projectid, search)])
             .then((data) => {
                 let [project, issues, assignee, total] = data;
                 const pages = Math.ceil(total / limit)
@@ -733,7 +634,7 @@ module.exports = (db) => {
         const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         const search = "";
-        Promise.all([usersModelbyProjectId(projectid, search, 'ALL', 0), showProject(projectid)])
+        Promise.all([Project.usersModelbyProjectId(projectid, search, 'ALL', 0), showProject(projectid)])
             .then((data) => {
                 let [users, project] = data;
                 res.render('projects/issues/add', {
@@ -799,7 +700,7 @@ module.exports = (db) => {
         const issueid = parseInt(req.params.issueid);
         const authorid = req.session.userid;
         const search = "";
-        Promise.all([usersModelbyProjectId(projectid, search, 'ALL', 0), showProject(projectid), showIssueById(projectid, issueid), showParentIssues(projectid)])
+        Promise.all([Project.usersModelbyProjectId(projectid, search, 'ALL', 0), showProject(projectid), showIssueById(projectid, issueid), showParentIssues(projectid)])
             .then((data) => {
                 let [users, project, issue, parentIssues] = data;
                 showUser(issue.assignee, projectid)
@@ -855,7 +756,7 @@ module.exports = (db) => {
     router.get('/activity/:projectid', isLoggedIn, (req, res) => {
         const link = 'projects';
         const projectid = parseInt(req.params.projectid);
-        Promise.all([showProject(projectid), showActivity(projectid)])
+        Promise.all([Project.showProject(projectid), Project.showActivity(projectid)])
             .then((data) => {
                 let [project, rawActivity] = data;
                 let activity = manipulateActivity(rawActivity);
