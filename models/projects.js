@@ -1,12 +1,7 @@
 class Project {
-   constructor(db) {
-      this.db = db
+   constructor() {
    }
-
-   static hallo() {
-      return 'hallo';
-   }
-
+   
    static projectsModel(search, limit, offset, db) {
       return new Promise((resolve, reject) => {
          const sqlAll = `SELECT projects.projectid, projects.name, STRING_AGG (users.firstname || ' ' || users.lastname,',' ORDER BY users.firstname, users.lastname) members FROM projects LEFT JOIN members ON projects.projectid = members.projectid LEFT JOIN users ON members.userid = users.userid ${search} GROUP BY projects.projectid LIMIT ${limit} OFFSET ${offset}`;
@@ -278,6 +273,74 @@ class Project {
                reject(err);
             })
          }
+      })
+   }
+
+   static recordActivity(form, issueid, authorid, projectid, db) {
+      return new Promise((resolve, reject) => {
+         let sql = `INSERT INTO activity (title, description, author, projectid, time) VALUES($1, $2, $3, $4, NOW())`;
+         let title = `${form.subject} #${issueid} (${form.tracker}) - [${form.status}]`;
+         let spentString = `${form.oldSpent}-${form.spentTime}`;
+         let doneString = `${form.oldDone}-${form.done}`;
+         let description = `${spentString}/${doneString}`;
+         db.query(sql, [title, description, authorid, projectid], err => {
+            resolve();
+            reject(err);
+         })
+      })
+   }
+
+
+   static updateIssue(issueid, form, db) {
+      return new Promise((resolve, reject) => {
+         let closeddate = false;
+         if (form.status == 'closed') {
+            closeddate = true;
+         }
+         if (form.file) {
+            let sqlInsert = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7, parenttask = $8, spenttime = $9, targetversion = $10,  files = $11, updateddate = $12${closeddate ? `, closeddate = NOW() ` : " "}WHERE issueid = $13`
+            db.query(sqlInsert, [form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.dueDate, parseInt(form.done), form.parentTask, parseInt(form.spentTime), form.targetVersion, form.file, 'NOW()', issueid], (err) => {
+               resolve();
+               reject(err);
+            })
+         } else {
+            let sqlInsert = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7, parenttask = $8, spenttime = $9, targetversion = $10, updateddate = $11${closeddate ? `, closeddate = NOW() ` : " "}WHERE issueid = $12`
+            db.query(sqlInsert, [form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.dueDate, parseInt(form.done), form.parentTask, parseInt(form.spentTime), form.targetVersion, 'NOW()', issueid], (err) => {
+               resolve();
+               reject(err);
+            })
+         }
+      })
+   }
+
+
+   static showParentIssues(projectid, db) {
+      return new Promise((resolve, reject) => {
+         db.query(`SELECT subject, tracker FROM issues WHERE projectid = $1 ORDER BY issueid ASC`, [projectid], (err, data) => {
+            let result = data.rows;
+            resolve(result);
+            reject(err);
+         })
+      })
+   }
+
+   static showIssueById(projectid, issueid, db) {
+      return new Promise((resolve, reject) => {
+         db.query(`SELECT issues.*, CONCAT(users.firstname,' ',users.lastname) as authorname FROM issues LEFT JOIN users ON issues.author = users.userid WHERE issues.projectid = $1 AND issues.issueid = $2 `, [projectid, issueid], (err, data) => {
+            let result = data.rows[0];
+            resolve(result);
+            reject(err);
+         })
+      })
+   }
+
+   static deleteIssue(projectid, issueid, db) {
+      return new Promise((resolve, reject) => {
+         let sql = `DELETE FROM issues WHERE projectid = $1 AND issueid = $2`
+         db.query(sql, [projectid, issueid], (err) => {
+            resolve();
+            reject(err);
+         })
       })
    }
 

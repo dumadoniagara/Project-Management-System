@@ -68,79 +68,6 @@ manipulateActivity = (activity) => {
 
 module.exports = (db) => {
 
-    function showParentIssues(projectid) {
-        return new Promise((resolve, reject) => {
-            db.query(`SELECT subject, tracker FROM issues WHERE projectid = $1 ORDER BY issueid ASC`, [projectid], (err, data) => {
-                let result = data.rows;
-                resolve(result);
-                reject(err);
-            })
-        })
-    }
-
-    function showIssueById(projectid, issueid) {
-        return new Promise((resolve, reject) => {
-            db.query(`SELECT issues.*, CONCAT(users.firstname,' ',users.lastname) as authorname FROM issues LEFT JOIN users ON issues.author = users.userid WHERE issues.projectid = $1 AND issues.issueid = $2 `, [projectid, issueid], (err, data) => {
-                let result = data.rows[0];
-                resolve(result);
-                reject(err);
-            })
-        })
-    }
-
-
-
-    function updateIssue(issueid, form) {
-        return new Promise((resolve, reject) => {
-            let closeddate = false;
-            if (form.status == 'closed') {
-                closeddate = true;
-            }
-            if (form.file) {
-                let sqlInsert = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7, parenttask = $8, spenttime = $9, targetversion = $10,  files = $11, updateddate = $12${closeddate ? `, closeddate = NOW() ` : " "}WHERE issueid = $13`
-                db.query(sqlInsert, [form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.dueDate, parseInt(form.done), form.parentTask, parseInt(form.spentTime), form.targetVersion, form.file, 'NOW()', issueid], (err) => {
-                    resolve();
-                    reject(err);
-                })
-            } else {
-                let sqlInsert = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7, parenttask = $8, spenttime = $9, targetversion = $10, updateddate = $11${closeddate ? `, closeddate = NOW() ` : " "}WHERE issueid = $12`
-                db.query(sqlInsert, [form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.dueDate, parseInt(form.done), form.parentTask, parseInt(form.spentTime), form.targetVersion, 'NOW()', issueid], (err) => {
-                    resolve();
-                    reject(err);
-                })
-            }
-        })
-    }
-
-    recordActivity = (form, issueid, authorid, projectid) => {
-        return new Promise((resolve, reject) => {
-            let sql = `INSERT INTO activity (title, description, author, projectid, time) VALUES($1, $2, $3, $4, NOW())`;
-            let title = `${form.subject} #${issueid} (${form.tracker}) - [${form.status}]`;
-            let spentString = `${form.oldSpent}-${form.spentTime}`;
-            let doneString = `${form.oldDone}-${form.done}`;
-            let description = `${spentString}/${doneString}`;
-            db.query(sql, [title, description, authorid, projectid], err => {
-                resolve();
-                reject(err);
-            })
-        })
-    }
-
-
-    function deleteIssue(projectid, issueid) {
-        return new Promise((resolve, reject) => {
-            let sql = `DELETE FROM issues WHERE projectid = $1 AND issueid = $2`
-            db.query(sql, [projectid, issueid], (err) => {
-                resolve();
-                reject(err);
-            })
-        })
-    }
-
-
-
-
-    // ================================== ROUTES ================================
     router.get('/', isLoggedIn, function (req, res, next) {
         const { checkId, id, checkName, name, checkMember, memberId } = req.query;
         const link = 'projects';
@@ -581,7 +508,7 @@ module.exports = (db) => {
                     console.log(err);
                 })
         } else {
-            Project.addIssue(form, authorid, db)
+            Project.addIssue(form, authorid, fileName = '', db)
                 .then(() => {
                     req.flash('issuesMessage', 'New issues added successfully!');
                     res.redirect(`/projects/issues/${projectid}`)
@@ -612,13 +539,12 @@ module.exports = (db) => {
         const issueid = parseInt(req.params.issueid);
         const authorid = req.session.userid;
         const search = "";
-        Promise.all([Project.usersModelbyProjectId(projectid, search, 'ALL', 0, db), showProject(projectid), showIssueById(projectid, issueid), showParentIssues(projectid)])
+        Promise.all([Project.usersModelbyProjectId(projectid, search, 'ALL', 0, db), Project.showProject(projectid, db), Project.showIssueById(projectid, issueid, db), Project.showParentIssues(projectid, db)])
             .then((data) => {
                 let [users, project, issue, parentIssues] = data;
-                showUser(issue.assignee, projectid)
+                Project.showUser(issue.assignee, projectid, db)
                     .then((assignee) => {
                         res.render('projects/issues/edit', {
-                            // res.json({
                             users,
                             project,
                             moment,
@@ -646,7 +572,7 @@ module.exports = (db) => {
         if (req.files) {
             let file = req.files.file;
             form.file = file.name.toLowerCase().replace("", Date.now()).split(" ").join("-");
-            Promise.all([recordActivity(form, issueid, authorid, projectid), updateIssue(issueid, form)])
+            Promise.all([Project.recordActivity(form, issueid, authorid, projectid, db), Project.updateIssue(issueid, form, db)])
                 .then(() => {
                     file.mv(path.join(__dirname, "..", "public", "upload", form.file), function (err) {
                         if (err) return res.status(500).send(err);
@@ -656,7 +582,7 @@ module.exports = (db) => {
                 })
                 .catch(err => console.log(err));
         } else {
-            Promise.all([recordActivity(form, issueid, authorid, projectid), updateIssue(issueid, form)])
+            Promise.all([Project.recordActivity(form, issueid, authorid, projectid, db), Project.updateIssue(issueid, form, db)])
                 .then(() => {
                     req.flash('issuesMessage', 'Issue updated');
                     res.redirect(`/projects/issues/${projectid}`)
@@ -668,7 +594,7 @@ module.exports = (db) => {
     router.get('/activity/:projectid', isLoggedIn, (req, res) => {
         const link = 'projects';
         const projectid = parseInt(req.params.projectid);
-        Promise.all([Project.showProject(projectid), Project.showActivity(projectid)])
+        Promise.all([Project.showProject(projectid, db), Project.showActivity(projectid, db)])
             .then((data) => {
                 let [project, rawActivity] = data;
                 let activity = manipulateActivity(rawActivity);
