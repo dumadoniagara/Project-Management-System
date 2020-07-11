@@ -3,7 +3,8 @@ var router = express.Router();
 var moment = require('moment');
 const path = require('path');
 const Project = require('../models/projects')
-const Users = require('../models/users')
+const Users = require('../models/users');
+const { static } = require('express');
 
 let checkOption = {
     id: true,
@@ -67,70 +68,6 @@ manipulateActivity = (activity) => {
 
 module.exports = (db) => {
 
-
-
-    function showUser(userid, projectid) {
-        return new Promise((resolve, reject) => {
-            db.query(`SELECT members.userid, CONCAT(firstname,' ', lastname) AS fullname, members.role FROM members LEFT JOIN users ON members.userid = users.userid WHERE members.userid = $1 AND members.projectid = $2`, [userid, projectid], (err, data) => {
-                let result = data.rows;
-                resolve(result);
-                reject(err);
-            })
-        })
-    }
-
-
-
-    function updateProjectMember(form) {
-        return new Promise((resolve, reject) => {
-            let values = [];
-            let sqlInsert = `INSERT INTO members (projectid, userid) VALUES `
-            if (typeof form.members == 'object') {
-                form.members.forEach(item => {
-                    values.push(`(${form.projectId}, ${item})`);
-                })
-                sqlInsert += values.join(', ');
-            } else {
-                sqlInsert += `(${form.projectId}, ${form.members})`
-            }
-            db.query(sqlInsert, (err) => {
-                resolve();
-                reject(err);
-            })
-        })
-    }
-
-
-
-    function editMember(form, userid) {
-        return new Promise((resolve, reject) => {
-            db.query(`UPDATE members SET role = $1 WHERE projectid = $2 AND userid = $3`, [form.role, form.projectId, userid], (err) => {
-                resolve();
-                reject(err);
-            })
-        })
-    }
-
-    function deleteMemberById(projectid, userid) {
-        return new Promise((resolve, reject) => {
-            let sqlDelete = `DELETE FROM members WHERE projectid = $1 AND userid = $2`;
-            db.query(sqlDelete, [projectid, userid], (err) => {
-                resolve();
-                reject(err);
-            })
-        })
-    }
-
-    function showIssues(projectid, search, limit, offset) {
-        return new Promise((resolve, reject) => {
-            db.query(`SELECT issues.*, CONCAT(users.firstname,' ',users.lastname) as authorname FROM issues LEFT JOIN users ON issues.author = users.userid WHERE issues.projectid = $1 ${search} ORDER BY issues.issueid ASC LIMIT ${limit} OFFSET ${offset}`, [projectid], (err, data) => {
-                let result = data.rows;
-                resolve(result);
-                reject(err);
-            })
-        })
-    }
-
     function showParentIssues(projectid) {
         return new Promise((resolve, reject) => {
             db.query(`SELECT subject, tracker FROM issues WHERE projectid = $1 ORDER BY issueid ASC`, [projectid], (err, data) => {
@@ -151,23 +88,7 @@ module.exports = (db) => {
         })
     }
 
-    function addIssue(form, authorid, fileName) {
-        return new Promise((resolve, reject) => {
-            if (fileName) {
-                let sqlInsert = `INSERT INTO issues (projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, author, files, createddate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())`
-                db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.startDate, form.dueDate, parseInt(form.estimatedTime), parseInt(form.done), authorid, fileName], (err) => {
-                    resolve();
-                    reject(err);
-                })
-            } else {
-                let sqlInsert = `INSERT INTO issues (projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, author, createddate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`
-                db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.startDate, form.dueDate, parseInt(form.estimatedTime), parseInt(form.done), authorid], (err) => {
-                    resolve();
-                    reject(err);
-                })
-            }
-        })
-    }
+
 
     function updateIssue(issueid, form) {
         return new Promise((resolve, reject) => {
@@ -216,15 +137,7 @@ module.exports = (db) => {
         })
     }
 
-    function showAssignee(projectid) {
-        return new Promise((resolve, reject) => {
-            db.query(`SELECT users.userid, CONCAT(firstname,' ', lastname) AS fullname FROM members LEFT JOIN users ON members.userid = users.userid WHERE members.projectid = $1`, [projectid], (err, data) => {
-                let result = data.rows;
-                resolve(result);
-                reject(err);
-            })
-        })
-    }
+
 
 
     // ================================== ROUTES ================================
@@ -488,11 +401,10 @@ module.exports = (db) => {
         const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         const userid = parseInt(req.params.userid);
-        Promise.all([showProject(projectid), showUser(userid, projectid)])
+        Promise.all([Project.showProject(projectid, db), Project.showUser(userid, projectid, db)])
             .then((data) => {
                 let [project, user] = data;
                 res.render('projects/members/edit', {
-                    // res.json({
                     project,
                     user,
                     link,
@@ -509,7 +421,7 @@ module.exports = (db) => {
         const projectid = parseInt(req.params.projectid)
         const userid = parseInt(req.params.userid);
         const form = req.body;
-        editMember(form, userid)
+        Project.editMember(form, userid, db)
             .then(() => {
                 res.redirect(`/projects/members/${projectid}`)
             })
@@ -521,7 +433,7 @@ module.exports = (db) => {
     router.get('/members/:projectid/delete/:userid', isLoggedIn, (req, res) => {
         const projectid = parseInt(req.params.projectid);
         const userid = parseInt(req.params.userid);
-        deleteMemberById(projectid, userid)
+        Project.deleteMemberById(projectid, userid, db)
             .then(() => {
                 res.redirect(`/projects/members/${projectid}`)
             })
@@ -560,7 +472,7 @@ module.exports = (db) => {
             search += `AND ${query.join(' AND ')}`;
         }
 
-        Promise.all([showProject(projectid), showIssues(projectid, search, limit, offset), showAssignee(projectid), Project.countPage('issueid', 'issues', projectid, search)])
+        Promise.all([Project.showProject(projectid, db), Project.showIssues(projectid, search, limit, offset, db), Project.showAssignee(projectid, db), Project.countPage('issueid', 'issues', projectid, search, db)])
             .then((data) => {
                 let [project, issues, assignee, total] = data;
                 const pages = Math.ceil(total / limit)
@@ -634,7 +546,7 @@ module.exports = (db) => {
         const link = 'projects';
         const projectid = parseInt(req.params.projectid);
         const search = "";
-        Promise.all([Project.usersModelbyProjectId(projectid, search, 'ALL', 0), showProject(projectid)])
+        Promise.all([Project.usersModelbyProjectId(projectid, search, 'ALL', 0, db), Project.showProject(projectid, db)])
             .then((data) => {
                 let [users, project] = data;
                 res.render('projects/issues/add', {
@@ -657,7 +569,7 @@ module.exports = (db) => {
         if (req.files) {
             let file = req.files.file;
             let fileName = file.name.toLowerCase().replace("", Date.now()).split(" ").join("-");
-            addIssue(form, authorid, fileName)
+            Project.addIssue(form, authorid, fileName, db)
                 .then(() => {
                     file.mv(path.join(__dirname, "..", "public", "upload", fileName), function (err) {
                         if (err) return res.status(500).send(err);
@@ -669,7 +581,7 @@ module.exports = (db) => {
                     console.log(err);
                 })
         } else {
-            addIssue(form, authorid)
+            Project.addIssue(form, authorid, db)
                 .then(() => {
                     req.flash('issuesMessage', 'New issues added successfully!');
                     res.redirect(`/projects/issues/${projectid}`)
@@ -700,7 +612,7 @@ module.exports = (db) => {
         const issueid = parseInt(req.params.issueid);
         const authorid = req.session.userid;
         const search = "";
-        Promise.all([Project.usersModelbyProjectId(projectid, search, 'ALL', 0), showProject(projectid), showIssueById(projectid, issueid), showParentIssues(projectid)])
+        Promise.all([Project.usersModelbyProjectId(projectid, search, 'ALL', 0, db), showProject(projectid), showIssueById(projectid, issueid), showParentIssues(projectid)])
             .then((data) => {
                 let [users, project, issue, parentIssues] = data;
                 showUser(issue.assignee, projectid)

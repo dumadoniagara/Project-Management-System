@@ -213,6 +213,74 @@ class Project {
       })
    }
 
+   static showUser(userid, projectid, db) {
+      return new Promise((resolve, reject) => {
+         db.query(`SELECT members.userid, CONCAT(firstname,' ', lastname) AS fullname, members.role FROM members LEFT JOIN users ON members.userid = users.userid WHERE members.userid = $1 AND members.projectid = $2`, [userid, projectid], (err, data) => {
+            let result = data.rows;
+            resolve(result);
+            reject(err);
+         })
+      })
+   }
+
+   static editMember(form, userid, db) {
+      return new Promise((resolve, reject) => {
+         db.query(`UPDATE members SET role = $1 WHERE projectid = $2 AND userid = $3`, [form.role, form.projectId, userid], (err) => {
+            resolve();
+            reject(err);
+         })
+      })
+   }
+
+
+   static deleteMemberById(projectid, userid, db) {
+      return new Promise((resolve, reject) => {
+         let sqlDelete = `DELETE FROM members WHERE projectid = $1 AND userid = $2`;
+         db.query(sqlDelete, [projectid, userid], (err) => {
+            resolve();
+            reject(err);
+         })
+      })
+   }
+
+   static showIssues(projectid, search, limit, offset, db) {
+      return new Promise((resolve, reject) => {
+         db.query(`SELECT issues.*, CONCAT(users.firstname,' ',users.lastname) as authorname FROM issues LEFT JOIN users ON issues.author = users.userid WHERE issues.projectid = $1 ${search} ORDER BY issues.issueid ASC LIMIT ${limit} OFFSET ${offset}`, [projectid], (err, data) => {
+            let result = data.rows;
+            resolve(result);
+            reject(err);
+         })
+      })
+   }
+
+   static showAssignee(projectid, db) {
+      return new Promise((resolve, reject) => {
+         db.query(`SELECT users.userid, CONCAT(firstname,' ', lastname) AS fullname FROM members LEFT JOIN users ON members.userid = users.userid WHERE members.projectid = $1`, [projectid], (err, data) => {
+            let result = data.rows;
+            resolve(result);
+            reject(err);
+         })
+      })
+   }
+
+   static addIssue(form, authorid, fileName, db) {
+      return new Promise((resolve, reject) => {
+         if (fileName) {
+            let sqlInsert = `INSERT INTO issues (projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, author, files, createddate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())`
+            db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.startDate, form.dueDate, parseInt(form.estimatedTime), parseInt(form.done), authorid, fileName], (err) => {
+               resolve();
+               reject(err);
+            })
+         } else {
+            let sqlInsert = `INSERT INTO issues (projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, author, createddate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`
+            db.query(sqlInsert, [form.projectId, form.tracker, form.subject, form.description, form.status, form.priority, parseInt(form.assignee), form.startDate, form.dueDate, parseInt(form.estimatedTime), parseInt(form.done), authorid], (err) => {
+               resolve();
+               reject(err);
+            })
+         }
+      })
+   }
+
 
 }
 
